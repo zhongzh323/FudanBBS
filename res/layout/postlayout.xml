@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/posttitlebackground"
+        android:orientation="vertical" >
+
+       <TextView
+           android:id="@+id/postowner"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentLeft="true"
+           android:layout_alignParentTop="true"
+           android:text="TextView"
+           android:textAppearance="?android:attr/textAppearanceSmallInverse"
+           android:textColor="@color/lightcoral" />
+
+    <TextView
+        android:id="@+id/posttime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:textColor="@color/darkblue" />
+
+    <TextView
+        android:id="@+id/posttitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:textColor="@color/black" />
+    
+	</LinearLayout>
+	
+    <LinearLayout
+        android:id="@+id/posttextlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" 
+        android:background="@android:color/background_light"
+        android:textAppearance="?android:attr/textAppearanceMedium">
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/postquote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/postquotebackground"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:textColor="@color/postquotetext"
+        android:textColorHint="@color/postquotetext" >
+	</LinearLayout>
+    <LinearLayout
+        android:id="@+id/postsignature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/darkblue" 
+        android:orientation="vertical"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse">
+	</LinearLayout>
+	
+</LinearLayout>

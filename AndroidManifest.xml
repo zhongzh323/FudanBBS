@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.fudanbbs"
+    android:versionCode="1"
+    android:versionName="1.0" android:installLocation="auto">
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:name=".FudanBBSApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="MainActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity android:name="LoginActivity" android:theme="@style/titlebarstyle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>            
+        </activity>
+        <activity android:name="TopicActivity"></activity>
+        <activity android:name="InitiateActivity"></activity>
+        <activity android:name="PostActivity"></activity>
+        <activity android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:name="ImageBrowserActivity"></activity>
+        <activity android:name="BoardActivity"></activity>
+    </application>
+
+</manifest>

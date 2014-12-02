@@ -1,0 +1,12 @@
+<resources>
+
+    <style name="CustomizedWindowTitleBackground"> 
+        <item name="android:background">#336699</item> 
+    </style> 
+    <style name="titlebarstyle" parent="android:Theme.Light"> 
+        <item name="android:windowTitleSize">48dp</item> 
+        <item name="android:windowTitleBackgroundStyle">@style/CustomizedWindowTitleBackground</item> 
+        <!-- All customizations that are NOT specific to a particular API-level can go here. --> 
+    </style> 
+
+</resources>
