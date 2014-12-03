@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,6 +16,7 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,10 +49,11 @@ public class LoginActivity extends Activity {
     		// TODO Auto-generated method stub
     		switch(v.getId()){
     		case R.id.login:
-    			login(false);
+    			login();
     			break;
     		case R.id.guestLogin:
-    			login(true);
+    			startMainActivity();
+    			finish();
     			break;
     		case R.id.register:
     			callBrowser2page("http://bbs.fudan.edu.cn/reg.htm");
@@ -59,13 +62,11 @@ public class LoginActivity extends Activity {
     	}
 	
     };
-    public void login(boolean isGuest){
+    public void login(){
 //		currentApplication.shortToast("login clicked!");
-		ETusername = (EditText)findViewById(R.id.username);
 		username = ETusername.getText().toString().trim();
-		ETpassword = (EditText)findViewById(R.id.password);
 		password = ETpassword.getText().toString().trim();
-		loginingDialog = new AlertDialog.Builder(LoginActivity.this).create();
+
 		loginingDialog.setCanceledOnTouchOutside(true);    			
 		if(username.isEmpty() || password.isEmpty()){
 			loginingDialog.setMessage(getResources().getString(R.string.accountNotNull));	
@@ -73,15 +74,24 @@ public class LoginActivity extends Activity {
 		}else if(!currentApplication.checkNetwork()){
 			loginingDialog.setMessage(getResources().getString(R.string.networkNotAvailable));	
 			loginingDialog.show();
-		}else{
-			progressdialog = new ProgressDialog(LoginActivity.this);
+		}else{			
 			progressdialog.setMessage(getString(R.string.loading));
 			progressdialog.setCancelable(false);
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-			progressdialog.show();	
-			loginTask login = new loginTask();
-			login.execute();
+//			progressdialog.show();	
+			loginTask logintask = new loginTask();
+			if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB)
+				logintask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			else
+				logintask.execute();
+			try {
+				logintask.get();
+			} catch (InterruptedException
+					| ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}    	
     }
 	@Override
@@ -91,19 +101,21 @@ public class LoginActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		setContentView(R.layout.login);
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.logintitlebar);
+		progressdialog = new ProgressDialog(LoginActivity.this);
+		loginingDialog = new AlertDialog.Builder(LoginActivity.this).create();
 		ETusername = (EditText)findViewById(R.id.username);
 		ETpassword = (EditText)findViewById(R.id.password);
 		currentApplication = (FudanBBSApplication)getApplication();
 		accountInfo = currentApplication.getAccountInfo();
 		if(null != accountInfo){
 			username = accountInfo.get("username");
-			if("true" == accountInfo.get("rememberpassword")){
+			if("true".equals(accountInfo.get("rememberpassword"))){
 				rememberPassword = true;
 				password = accountInfo.get("password");
 			}else{
 				rememberPassword = false;
 			}
-			if("true" == accountInfo.get("autologin")){
+			if("true".equals(accountInfo.get("autologin"))){
 				autoLogin = true;
 			}else{
 				autoLogin = false;
@@ -118,9 +130,13 @@ public class LoginActivity extends Activity {
 			ETpassword.setText(password);
 		}
 		
+		if(true == autoLogin){
+			login();
+			finish();
+		}
 		// for convenience of debug
-		username = "joancruise";
-		password = "38268349220";
+//		username = "joancruise";
+//		password = "38268349220";
 		
 		CBrememberPassword = (CheckBox)findViewById(R.id.checkRememberPassword);
 		CBautoLogin = (CheckBox)findViewById(R.id.checkAutoLogin);
@@ -144,10 +160,14 @@ public class LoginActivity extends Activity {
 		
 	}
 	
-	//
-	public void popLoginDialog(){
-		
+	public void startMainActivity(){
+		Intent intent = new Intent();
+		intent.setClass(getApplicationContext(), MainActivity.class);
+		startActivity(intent);	
+
 	}
+	
+	
 
 	// login page Async task class
 	public class loginTask extends AsyncTask<Object, Object, Object>{
@@ -165,22 +185,36 @@ public class LoginActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-
-			if(302 == httpResponseCode && "" != cookieValue){
-				loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
-				Intent intent = new Intent();
-				intent.setClass(getApplicationContext(), MainActivity.class);
-				startActivity(intent);
-				loginingDialog.dismiss();
-				finish();
-			}else if (200 == httpResponseCode){
-				loginingDialog.setMessage(getResources().getString(R.string.accountError)+httpResponseCode+cookieValue);
-//				loginingDialog.cancel();
-			}else if (0 ==httpResponseCode ){
-				loginingDialog.setMessage(getResources().getString(R.string.loginFailedServerError));
-			}else{
-				loginingDialog.setMessage(getResources().getString(R.string.loginFailed)+" error code="+httpResponseCode);				
-			}
+			accountInfo.put("username", username);
+			accountInfo.put("password", password);
+			switch(httpResponseCode){
+    			case 302:
+    				if(false == cookieValue.isEmpty()){
+    					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
+    					startMainActivity();
+						if (CBrememberPassword.isChecked()){
+    						accountInfo.put("rememberpassword", "true");    						
+    					}
+    					if(CBautoLogin.isChecked()){
+    						accountInfo.put("autologin", "true");
+    					}
+    					currentApplication.saveAccountInfo(accountInfo);
+    					finish();					
+    				}
+    				break;
+    			case 200:
+    				loginingDialog.setMessage(getResources().getString(R.string.accountError)+httpResponseCode+cookieValue);
+    				loginingDialog.show();
+    				break;
+    			case 0:
+    				loginingDialog.setMessage(getResources().getString(R.string.loginFailedServerError));
+    				loginingDialog.show();
+    				break;
+    			default:
+    				loginingDialog.setMessage(getResources().getString(R.string.loginFailed)+" error code="+httpResponseCode);
+    				loginingDialog.show();
+    				break;
+    			}
 		}
 
 		@Override
@@ -222,11 +256,14 @@ public class LoginActivity extends Activity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}finally{
-				connection.disconnect();
+				if(null != connection){
+					connection.disconnect();
+				}
 			}
 			return null;
 		}
 		
 	}
+
 	
 }

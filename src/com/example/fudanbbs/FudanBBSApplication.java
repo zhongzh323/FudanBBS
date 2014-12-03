@@ -67,8 +67,8 @@ public class FudanBBSApplication extends Application {
 		HashMap <String, String> map = new HashMap <String, String>();
 		map.put("username", setting.getString("username", ""));
 		map.put("password", setting.getString("password", ""));	
-		map.put("rememberaccount", setting.getString("username", ""));
-		map.put("password", setting.getString("password", ""));	
+		map.put("rememberpassword", setting.getString("rememberpassword", ""));
+		map.put("autologin", setting.getString("autologin", ""));	
 		return map;
 	}
 	

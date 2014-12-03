@@ -6,7 +6,9 @@
     </shared>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="021cedb0-5cc4-4681-a682-a2f3a0884a11" name="Default" comment="" />
+    <list default="true" id="021cedb0-5cc4-4681-a682-a2f3a0884a11" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+    </list>
     <ignored path="fudanBBS.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -41,6 +43,9 @@
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -170,6 +175,7 @@
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.0" />
+    <property name="FullScreen" value="false" />
   </component>
   <component name="RunManager" selected="Android Application.fudanBBS">
     <configuration default="true" type="JUnit" factoryName="JUnit">
