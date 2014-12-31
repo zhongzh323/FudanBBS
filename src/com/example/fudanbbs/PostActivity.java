@@ -60,7 +60,8 @@ public class PostActivity extends Activity {
 	private String lastpageurl;
 	private String lastfid;
 	private boolean lastpage = false;
-	private final String TAG = "post";
+	private boolean flag;
+	private final String TAG = "#########PostActivity###########";
 	private ArrayList<HashMap<String, ArrayList<String []>>> postArrayList;
 	private postAdapter postadapter;
 	private ListView listview;
@@ -96,16 +97,17 @@ public class PostActivity extends Activity {
 						.getString(R.string.pull_to_refresh_refreshing_label));
 				pulltorefreshlistview.setRefreshing();
 				postArrayList.clear();
+				flag = false;
 				postAsyncTask postasynctask = new postAsyncTask();
 				postasynctask.execute(url);	
-				try {
-					postasynctask.get();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				while(!flag){
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					continue;
 				}
 				new Handler().postDelayed(new Runnable(){
 
@@ -127,18 +129,18 @@ public class PostActivity extends Activity {
 						.getString(R.string.pull_to_refresh_from_bottom_refreshing_label));
 				if(false == lastpage){
     				pulltorefreshlistview.setRefreshing();
+    				flag = false;
     				postAsyncTask postasynctask = new postAsyncTask();
     				postasynctask.execute(nextpageurl);
-    				try {
-    					postasynctask.get();
-    				} catch (InterruptedException e) {
-    					// TODO Auto-generated catch block
-    					e.printStackTrace();
-    				} catch (ExecutionException e) {
-    					// TODO Auto-generated catch block
-    					e.printStackTrace();
-    				}
-	
+    				while(!flag){
+    					try {
+    						Thread.sleep(200);
+    					} catch (InterruptedException e) {
+    						// TODO Auto-generated catch block
+    						e.printStackTrace();
+    					}
+    					continue;
+    				}	
 				}else{
 				Toast.makeText(getApplicationContext(),getResources().getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
 			}	
@@ -147,8 +149,9 @@ public class PostActivity extends Activity {
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
+							postadapter.notifyDataSetChanged();	
 							pulltorefreshlistview.onRefreshComplete();
-							postadapter.notifyDataSetChanged();							
+						
 					}				
 				}, 0);			
 			}
@@ -163,18 +166,19 @@ public class PostActivity extends Activity {
 			
 		};
 
-
+		flag = false;
 		postArrayList = new ArrayList<HashMap<String, ArrayList<String []>>>();
 		postAsyncTask postasynctask = new postAsyncTask();
 		postasynctask.execute(url);
-		try {
-			postasynctask.get();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		while(!flag){
+			try {
+				Thread.sleep(200);
+				Log.v(TAG, "sleep for 200ms");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue;
 		}
 		pulltorefreshlistview = (PullToRefreshListView)findViewById(R.id.postlistview);
 		pulltorefreshlistview.setMode(Mode.BOTH);
@@ -271,11 +275,11 @@ public class PostActivity extends Activity {
 			xiv.setlistener();
 			layout.addView(xiv);	
 		}
-		private void createTextView(String aURL, int textsize){
+		private void createTextView(String text, int textsize){
 			TextView tv = new TextView(context);
-			tv.setText(aURL);
+			tv.setText(text);
 			tv.setTextSize(textsize);
-			Log.v(TAG, aURL);
+//			Log.v(TAG, text);
 			layout.addView(tv);			
 		}
 		private void createhrefTextView(String aURL){
@@ -375,6 +379,8 @@ public class PostActivity extends Activity {
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
 			progressdialog.show();
+			Log.v(TAG, "onPreExecute");
+			
 		}
 
 		@Override
@@ -382,17 +388,11 @@ public class PostActivity extends Activity {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 
-//			printarraylist();
-/*			if(false == firstTimeLoad){
-    			pulltorefreshlistview = (PullToRefreshListView)findViewById(R.id.postlistview);
-    			listview = pulltorefreshlistview.getRefreshableView();
-    			listview.setAdapter(postadapter);
-			}else{
-				postadapter.notifyDataSetChanged();
-				pulltorefreshlistview.onRefreshComplete();				
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();				
 			}
-			*/
-			progressdialog.dismiss();
+			
+			Log.v(TAG, "onPostExecute");
 		}
 
 		@Override
@@ -411,8 +411,8 @@ public class PostActivity extends Activity {
 			String lastfid = null;
 			String last = "0";
 			try {
-				Log.v(TAG, url);
-				Document doc = Jsoup.connect(url).timeout(5000).get();
+				Log.v(TAG, "doInBackground start "+url);
+				Document doc = Jsoup.connect(url).timeout(20000).get();
 				
 				//get  bid for generating the "next page " URL path
 				Elements elements = doc.getElementsByTag("bbstcon");
@@ -544,10 +544,12 @@ public class PostActivity extends Activity {
     					map.put("signature", arraysignature);
     					map.put("bodyimage", arraybodyimage);
     					map.put("signatureimage", arraysignatureimage);
+//    					Log.v(TAG, arraysignatureimage.get(0).toString());
     					postArrayList.add(map);
     				}
     				nextpageurl = "http://bbs.fudan.edu.cn/bbs/tcon?new=1&bid="+bid+"&g="+gid+"&f="+lastfid+"&a=n";
-    				Log.v(TAG, nextpageurl);
+    				Log.v(TAG, "doInBackground end, next page url =" +nextpageurl);
+    				flag = true;
 	//			}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -566,20 +568,20 @@ public class PostActivity extends Activity {
 		String[] temparray = new String[2];      //a temporary array to store the temporary string array data
 		String[] temparrayowner = postArrayList.get(position).get("owner").get(0);
 		String[] temparraynick = postArrayList.get(position).get("nick").get(0);
-		Log.v(TAG, temparrayowner[1]+"["+temparraynick[1]+"]");
+//		Log.v(TAG, temparrayowner[1]+"["+temparraynick[1]+"]");
 		temparray = new String[2];
 		temparray = postArrayList.get(position).get("date").get(0);
-		Log.v(TAG, temparray[1]);
+//		Log.v(TAG, temparray[1]);
 		temparray = new String[2];
 		temparray = postArrayList.get(position).get("title").get(0);
-		Log.v(TAG, temparray[1]);		
+//		Log.v(TAG, temparray[1]);		
 		ArrayList<String[]> tempabodylist = new ArrayList<String[]>();
 		tempabodylist = postArrayList.get(position).get("body");
 		for(int i=0; i<tempabodylist.size(); i++){
 			temparray = new String[2];
 			String[] strings = tempabodylist.get(i);
 			temparray = strings;
-			Log.v(TAG, temparray[1]);
+//			Log.v(TAG, temparray[1]);
 
 		}
 		

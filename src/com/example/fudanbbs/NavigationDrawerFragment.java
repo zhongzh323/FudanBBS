@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -15,10 +16,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 /**
  * @author Joseph.Zhong
@@ -30,7 +35,7 @@ import android.widget.Toast;
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
 public class NavigationDrawerFragment extends Fragment {
-
+    private FudanBBSApplication currentApplication;
     /**
      * Remember the position of the selected item.
      */
@@ -59,6 +64,7 @@ public class NavigationDrawerFragment extends Fragment {
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+    
 
     public NavigationDrawerFragment() {
     }
@@ -91,15 +97,27 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+		currentApplication = (FudanBBSApplication)this.getActivity().getApplication();
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
-        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        
+/*        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
+                selectItem(1);
             }
-        });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+        });   */
+        mDrawerListView.setAdapter(new DrawerAdapter(getActionBar().getThemedContext(), mCurrentSelectedPosition, mCurrentSelectedPosition,   
+        		new String[]{
+                        getString(R.string.top10board),
+                        getString(R.string.recommendboard),
+                        getString(R.string.myfavorite),
+                        getString(R.string.allboard),
+                        getString(R.string.mymail),      
+                        getString(R.string.mypreference),                  
+                }));
+/*        mDrawerListView.setAdapter(new ArrayAdapter<String>(
                 getActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
@@ -110,7 +128,7 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.allboard),
                         getString(R.string.mymail),      
                         getString(R.string.mypreference),                  
-                }));
+                }));*/
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -275,6 +293,87 @@ public class NavigationDrawerFragment extends Fragment {
         return getActivity().getActionBar();
     }
 
+    public class DrawerAdapter extends ArrayAdapter{
+    	@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+//			return super.getCount();
+    		return 1;
+		}
+
+		private Context context;
+    	private String[] stringarray;
+		private LayoutInflater inflater;
+		private ListView listview;
+		public DrawerAdapter(Context context, int resource,
+				int textViewResourceId, Object[] objects) {
+			super(context, resource, textViewResourceId, objects);
+			// TODO Auto-generated constructor stub
+			this.context = context;
+			this.stringarray = (String[]) objects;
+			this.inflater = LayoutInflater.from(context);
+		}
+
+		@Override
+		public View getView(int position, View convertView,
+				ViewGroup parent) {
+			// TODO Auto-generated method stub
+//			return super.getView(position, convertView, parent);
+			convertView = inflater.inflate(R.layout.drawercontent, null);
+			TextView textview = (TextView) convertView.findViewById(R.id.drawerusername);
+//			textview.setTextSize(20);
+			if(currentApplication.isCurrentUserGuest()){
+				textview.setText(R.string.notloginyet);
+			}else{
+				textview.setText(currentApplication.getCurrentUsername());
+			}
+	        LinearLayout layout1 = (LinearLayout) convertView.findViewById(R.id.layout1);
+	        LinearLayout layout2 = (LinearLayout) convertView.findViewById(R.id.layout2);
+	        LinearLayout layout3 = (LinearLayout) convertView.findViewById(R.id.layout3);
+	        LinearLayout layout4 = (LinearLayout) convertView.findViewById(R.id.layout4);
+	        LinearLayout layout5 = (LinearLayout) convertView.findViewById(R.id.layout5);
+	        LinearLayout layout6 = (LinearLayout) convertView.findViewById(R.id.layout6);
+	        OnClickListener listener = new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					switch(v.getId()){
+					case R.id.layout1:
+						selectItem(1);
+						break;
+					case R.id.layout2:
+						selectItem(2);
+						break;
+					case R.id.layout3:
+						selectItem(3);
+						break;
+					case R.id.layout4:
+						selectItem(4);
+						break;
+					case R.id.layout5:
+						selectItem(5);
+						break;
+					case R.id.layout6:
+						selectItem(6);
+						break;
+					}
+				}
+	        	
+	        };
+	        
+	        layout1.setOnClickListener(listener);
+	        layout2.setOnClickListener(listener);
+	        layout3.setOnClickListener(listener);
+	        layout4.setOnClickListener(listener);
+	        layout5.setOnClickListener(listener);
+	        layout6.setOnClickListener(listener);
+			return convertView;
+		}
+    	
+    }
+    
+    
     /**
      * Callbacks interface that all activities using this fragment must implement.
      */

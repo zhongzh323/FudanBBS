@@ -11,20 +11,21 @@
         android:focusableInTouchMode="true">
         <TableRow
             android:id="@+id/tableRow1"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/top10title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="@string/username"/>
 
             <EditText
                 android:id="@+id/username"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
+                android:layout_weight="1"
                 android:hint="输入用户名" >
             </EditText>
 
@@ -32,19 +33,20 @@
 
         <TableRow
             android:id="@+id/tableRow2"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" >
             <TextView
                 android:id="@+id/top10author"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="@string/password"/>
 
             <EditText
                 android:id="@+id/password"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
+                android:layout_weight="1"
                 android:hint="输入密码"
                 android:inputType="textPassword" >
             </EditText>            
@@ -60,12 +62,14 @@
             android:id="@+id/checkRememberPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"            
             android:text="@string/rememberpassword" />
 
         <CheckBox
             android:id="@+id/checkAutoLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/autologin" />
 
     </LinearLayout>
@@ -76,23 +80,27 @@
 
         <Button
             android:id="@+id/login"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.93"
+            android:layout_weight="1"
+	        android:paddingTop="8sp"
+			android:paddingBottom="8sp"
             android:background="@color/fudanNavigation"
             android:text="@string/login"
             android:textColor="@color/lightgray"
-            android:textSize="24sp" />
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <Button
             android:id="@+id/guestLogin"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
+            android:layout_weight="1"
+	        android:paddingTop="8sp"
+			android:paddingBottom="8sp"            
             android:background="@color/lightcoral"
             android:text="@string/guestLogin"
             android:textColor="@color/dimgray"
-            android:textSize="24sp" />
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     </LinearLayout>
 
@@ -115,7 +123,7 @@
                 android:layout_alignParentEnd="false"
                 android:layout_alignParentLeft="true"
                 android:text="@string/noAccount"
-                android:textSize="24sp" />
+            	android:textAppearance="?android:attr/textAppearanceLarge"/>
 
             <TextView
                 android:id="@+id/register"
@@ -125,7 +133,7 @@
                 android:layout_toRightOf="@+id/top10board"
                 android:text="@string/register"
                 android:textColor="@color/blue"
-                android:textSize="24sp" />
+            	android:textAppearance="?android:attr/textAppearanceLarge"/>
 
             </RelativeLayout>
 

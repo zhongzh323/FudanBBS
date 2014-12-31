@@ -32,21 +32,10 @@ import android.widget.TextView;
 public class Top10Fragment extends Fragment {
 	static final String TAG = "MainActivity";
 	private FudanBBSApplication currentApplication;
-	Activity ma;
-	ArrayList<HashMap<String, String>> top10List;
-	SimpleAdapter adapter;
-	ProgressDialog progressdialog;
-	public Top10Fragment(){
-		top10List = new ArrayList<HashMap<String, String>>();
+	private ArrayList<HashMap<String, String>> top10List;
+	private SimpleAdapter adapter;
+	private boolean flag;
 
-	}
-	@Override
-	public void onAttach(Activity activity) {
-		// TODO Auto-generated method stub
-		super.onAttach(activity);
-		ma = activity;
-		Log.v(TAG, "onAttach");
-	}
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -61,29 +50,18 @@ public class Top10Fragment extends Fragment {
 		// TODO Auto-generated method stub
 		View rootView = inflater.inflate(R.layout.top10fragment, container, false);
         ListView top10ListView = (ListView)rootView.findViewById(R.id.top10listview);
-         
-		currentApplication = (FudanBBSApplication)(ma.getApplication());
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
-		
+		flag = false;
+		top10List = new ArrayList<HashMap<String, String>>();		
     	top10AsycTask task = new top10AsycTask();
     	task.execute();
-    	try {
-			task.get();
+		while(!flag){try {
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-        for(HashMap<String, String> map: top10List){
-        	Log.v(TAG, map.get("title"));
-        }
+		continue;
+	}
 
         adapter = new SimpleAdapter(rootView.getContext(), top10List, 
         		R.layout.top10, 
@@ -115,33 +93,33 @@ public class Top10Fragment extends Fragment {
         	
         };
         top10ListView.setOnItemClickListener(listener);
-		progressdialog.dismiss();
 		return rootView;
 	}
 	
     public class top10AsycTask extends AsyncTask<String, Integer, String>{
-    	private String cookieValue;
-		private String urltop10;
-		private String urlrecommendboard;
-		private Connection connection;
+
+		private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-//			currentApplication = (FudanBBSApplication)getActivity().getApplication();	
-//			cookieValue = currentApplication.get_cookie();
-			urltop10 = "http://bbs.fudan.edu.cn/bbs/top10";
-			urlrecommendboard = "http://bbs.fudan.edu.cn/bbs/sec";
-			connection = Jsoup.connect(urltop10);
 			Log.v(TAG, "onPreExecute");
-			
+			progressdialog = new ProgressDialog(getActivity());
+			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setCancelable(false);
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+			progressdialog.show();					
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
 //			super.onPostExecute(result);
-//			Log.v(TAG, "onPostExecute");
+			Log.v(TAG, "onPostExecute");
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
 		}
 
 		@Override
@@ -155,10 +133,8 @@ public class Top10Fragment extends Fragment {
 			// TODO Auto-generated method stub
 			Log.v(TAG, "doInBackground start");
 			try {
-				Document doc = connection.get();
+				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/top10").get();
 				Elements ele = doc.getElementsByTag("top");
-//				Document doc = Jsoup.parse(url);
-//				System.out.println(doc.body());
 				for(Element e: ele){
 					HashMap<String, String> map = new HashMap();
 					map.put("owner",e.attr("owner").toString().trim());
@@ -173,6 +149,7 @@ public class Top10Fragment extends Fragment {
 				e.printStackTrace();
 			}
 			Log.v(TAG, "doInBackground end");
+			flag = true;
 			return null;
 		}
     }

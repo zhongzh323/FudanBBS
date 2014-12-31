@@ -44,9 +44,10 @@ public class BoardActivity extends Activity {
 	private String topicmodeURL, traditionalmodeURL, bid;
 	private ArrayList<HashMap<String, String>> topicdata;
 	private Bundle bundle;
-	private ProgressDialog progressdialog;
+	private boolean flag;
 	private ListView listview;
 	private PullToRefreshListView refreshlistview;
+
 	static class ViewHolder{
 		TextView topicowner;
 		TextView topictime;
@@ -63,25 +64,18 @@ public class BoardActivity extends Activity {
 			traditionalmodeURL = bundle.getString("boardURL");		
 			Log.v("TAG####################", traditionalmodeURL.toString());
 		}
-
-
-		progressdialog = new ProgressDialog(this);
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
+		flag = false;
 		topicdata = new ArrayList<HashMap<String, String>>();
 		TopicListAsyncTask asynctask = new TopicListAsyncTask();
 		asynctask.execute();
-		try {
-			asynctask.get();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		while(!flag){
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue;
 		}
 		OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
 
@@ -124,7 +118,6 @@ public class BoardActivity extends Activity {
 			}
 			
 		});
-		progressdialog.dismiss();
 	}	
 	
 	public class TopicAdapter extends BaseAdapter{
@@ -180,21 +173,57 @@ public class BoardActivity extends Activity {
 	}
 	
     public class TopicListAsyncTask extends AsyncTask{
-
+    	private ProgressDialog progressdialog;
+    	private HashMap<String, String> cookie;
+    	private FudanBBSApplication currentapplication;
     	@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressdialog = new ProgressDialog(BoardActivity.this);
+			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setCancelable(false);
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+			progressdialog.show();		
+			currentapplication = (FudanBBSApplication)getApplication();
+			cookie = new  HashMap<String, String>();
+			cookie = currentapplication.get_cookie();			
+		}
+
+		@Override
+		protected void onPostExecute(Object result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
+		}
+
+		@Override
     	protected Object doInBackground(Object... params) {
     		// TODO Auto-generated method stub
 			if(traditionalmodeURL.isEmpty() == false){
+				Document doc, doc1;
 				try {    
 //					String traditionalmodeURL = "http://bbs.fudan.edu.cn/bbs/doc?board=Real_Estate";
-					Document doc = Jsoup.connect(traditionalmodeURL).get();
+					if(cookie.get("utmpuserid")!=null){
+						doc = Jsoup.connect(traditionalmodeURL).cookies(cookie).get();
+					}else{
+						doc = Jsoup.connect(traditionalmodeURL).get();					
+					}
+
 					Elements elements = doc.getElementsByTag("brd");
 					for(Element element : elements){
 						System.out.println(element.attr("bid"));
 						bid = element.attr("bid");
 						topicmodeURL = "http://bbs.fudan.edu.cn/bbs/tdoc?bid="+bid;
 					}
-					Document doc1 = Jsoup.connect(topicmodeURL).get();
+					if(cookie.get("utmpuserid")!=null){
+						doc1 = Jsoup.connect(topicmodeURL).cookies(cookie).get();
+					}else{
+						doc1 = Jsoup.connect(topicmodeURL).get();					
+					}
 					elements.clear();
 					elements = doc1.getElementsByTag("po");
 					for(Element ele: elements){
@@ -212,6 +241,7 @@ public class BoardActivity extends Activity {
 					e.printStackTrace();
 				}
 			}
+			flag = true;;
     		return null;
     	}
     	

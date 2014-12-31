@@ -24,8 +24,10 @@ public class FudanBBSApplication extends Application {
 	private String lastUsername;
 	private HashMap<String, String> account;
 	private boolean rememberPassword, autoLogin;
-	private String cookie = null;
-	
+
+	boolean isCurrentUserGuest;
+	private String currentusername;
+	private HashMap<String, String> cookie;
 	// message related:
 	private int checkInterval;
 	private boolean checkMessage, vibrateNotification;
@@ -58,8 +60,24 @@ public class FudanBBSApplication extends Application {
 	private String serverAddress;
 	private boolean upload2Server;
 	
-	// advertise
+	// check if the current user is guest
+
+	public boolean isCurrentUserGuest(){
+		return isCurrentUserGuest;
+	}
+	public void setCurrentUserGuest(){
+		isCurrentUserGuest = true;
+	}
+	public void setCurrentUserNotGuest(){
+		isCurrentUserGuest = false;
+	}
 	
+	public void setCurrentUsername(String aUsername){
+		this.currentusername = aUsername;
+	}
+	public String getCurrentUsername(){
+		return this.currentusername;
+	}	
 	// get user account information from shared preference file 
 	public HashMap <String, String> getAccountInfo(){
 		String PrefsName = "AccountInfo";
@@ -85,12 +103,12 @@ public class FudanBBSApplication extends Application {
 		
 	}	
 	// get global cookie
-	public String get_cookie(){
-		return cookie;
+	public HashMap<String, String> get_cookie(){
+		return this.cookie;
 	}
 	// set global cookie
-	public void setCookie(String aCookie){
-		cookie = aCookie;
+	public void setCookie(HashMap<String, String> cookie){
+		this.cookie = cookie;
 	}
 	
 	// get last user name

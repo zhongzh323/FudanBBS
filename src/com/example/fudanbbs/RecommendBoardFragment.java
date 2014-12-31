@@ -32,9 +32,11 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class RecommendBoardFragment extends Fragment {
 	private ArrayList<HashMap<String, ArrayList<String[]>>> recommendboardlist;
-	private ProgressDialog progressdialog;
+	private boolean flag;
 	private View rootView;
 	private int textsize;
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
 	static class ViewHolder{
 		TextView boardname;
 		TextView boardnamefake;
@@ -71,24 +73,18 @@ public class RecommendBoardFragment extends Fragment {
 		return rootView;
 	}
 	public void generateView(){
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
+		flag = false;
 		recommendBoardAsyncTask task = new recommendBoardAsyncTask();
     	task.execute();
-    	try {
-			task.get();
+		while(!flag){
+			try {
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		progressdialog.dismiss();
+		continue;
+		}
 	}
 
 	@Override
@@ -201,26 +197,40 @@ public class RecommendBoardFragment extends Fragment {
 	}
 	
 	public class recommendBoardAsyncTask extends AsyncTask{
-
+		private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			recommendboardlist = new ArrayList<HashMap<String, ArrayList<String[]>>>();	
+			progressdialog = new ProgressDialog(getActivity());
+			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setCancelable(false);
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+			progressdialog.show();		
 		}
 
 		@Override
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
 		}
 
 		@Override
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
+			currentapplication = (FudanBBSApplication) getActivity().getApplication();
+			cookie = new  HashMap<String, String>();
+			cookie = currentapplication.get_cookie();
 			String url = "http://bbs.fudan.edu.cn/bbs/sec";
+			Log.v("RecommendBoardFragement", "doInBackground");
+			Log.v("RecommendBoardFragementcoolie", cookie.get("utmpuserid"));
 			try {
-				Document doc = Jsoup.connect(url).get();
+				Document doc = Jsoup.connect(url).cookies(cookie).get();
 				Elements sections = doc.getElementsByTag("sec");
 				for(Element section: sections){
 					HashMap<String, ArrayList<String[]>> map = new HashMap<String, ArrayList<String[]>>();
@@ -249,6 +259,7 @@ public class RecommendBoardFragment extends Fragment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			flag = true;
 			return null;
 		}
 	}

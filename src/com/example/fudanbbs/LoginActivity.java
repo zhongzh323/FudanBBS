@@ -3,9 +3,14 @@ package com.example.fudanbbs;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,6 +23,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -31,7 +37,14 @@ import android.widget.Toast;
  *
  */
 public class LoginActivity extends Activity {
-    private String username, password;
+    @Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+//		super.onBackPressed();
+		moveTaskToBack(false);  
+	}
+
+	private String username, password;
     private boolean rememberPassword, autoLogin;
     private EditText ETusername, ETpassword;
     private CheckBox CBrememberPassword, CBautoLogin;
@@ -40,8 +53,7 @@ public class LoginActivity extends Activity {
     private HashMap <String, String> accountInfo;
     private FudanBBSApplication currentApplication;
     private AlertDialog loginingDialog;
-    private ProgressDialog progressdialog;
-	private String cookieValue;
+
     OnClickListener listener = new OnClickListener(){
     
     	@Override
@@ -49,11 +61,12 @@ public class LoginActivity extends Activity {
     		// TODO Auto-generated method stub
     		switch(v.getId()){
     		case R.id.login:
+    			currentApplication.setCurrentUserNotGuest();
     			login();
     			break;
     		case R.id.guestLogin:
-    			startMainActivity();
-    			finish();
+    			currentApplication.setCurrentUserGuest();
+    			guestLogin();
     			break;
     		case R.id.register:
     			callBrowser2page("http://bbs.fudan.edu.cn/reg.htm");
@@ -62,6 +75,11 @@ public class LoginActivity extends Activity {
     	}
 	
     };
+    
+    public void guestLogin(){
+		guestLoginTask logintask = new guestLoginTask();
+		logintask.execute();    	
+    }
     public void login(){
 //		currentApplication.shortToast("login clicked!");
 		username = ETusername.getText().toString().trim();
@@ -75,23 +93,10 @@ public class LoginActivity extends Activity {
 			loginingDialog.setMessage(getResources().getString(R.string.networkNotAvailable));	
 			loginingDialog.show();
 		}else{			
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCancelable(false);
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-//			progressdialog.show();	
+
 			loginTask logintask = new loginTask();
-			if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB)
-				logintask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-			else
-				logintask.execute();
-			try {
-				logintask.get();
-			} catch (InterruptedException
-					| ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			logintask.execute();
+
 		}    	
     }
 	@Override
@@ -101,7 +106,6 @@ public class LoginActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		setContentView(R.layout.login);
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.logintitlebar);
-		progressdialog = new ProgressDialog(LoginActivity.this);
 		loginingDialog = new AlertDialog.Builder(LoginActivity.this).create();
 		ETusername = (EditText)findViewById(R.id.username);
 		ETpassword = (EditText)findViewById(R.id.password);
@@ -132,11 +136,8 @@ public class LoginActivity extends Activity {
 		
 		if(true == autoLogin){
 			login();
-			finish();
 		}
-		// for convenience of debug
-//		username = "joancruise";
-//		password = "38268349220";
+
 		
 		CBrememberPassword = (CheckBox)findViewById(R.id.checkRememberPassword);
 		CBautoLogin = (CheckBox)findViewById(R.id.checkAutoLogin);
@@ -167,17 +168,91 @@ public class LoginActivity extends Activity {
 
 	}
 	
-	
+	public class guestLoginTask extends AsyncTask<Object, Object, Object>{
+		private int httpResponseCode;
+	    private ProgressDialog progressdialog;
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressdialog = new ProgressDialog(LoginActivity.this);
+			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setCancelable(false);
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+			progressdialog.show();	
+
+		}
+		@Override
+		protected void onPostExecute(Object result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
+			if(httpResponseCode == 9999){
+				loginingDialog.setMessage(getResources().getString(R.string.connectfailed));
+				loginingDialog.show();				
+			}else{
+				startMainActivity();
+				finish();
+			}
+			
+		}
+
+		@Override
+		protected Object doInBackground(Object... params) {
+			// TODO Auto-generated method stub
+			URL url;
+			HttpURLConnection connection = null;
+				try {
+					url = new URL("http://bbs.fudan.edu.cn");
+					connection = (HttpURLConnection)url.openConnection();
+					connection.setDoInput(true);
+					connection.setDoOutput(true);
+					connection.setRequestMethod("POST");
+					connection.setConnectTimeout(10000);
+					connection.setInstanceFollowRedirects(false);
+					connection.connect();
+					httpResponseCode = connection.getResponseCode();
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch(SocketTimeoutException e){
+					httpResponseCode = 9999;
+				}
+					catch(Exception e){
+						e.printStackTrace();
+				}
+				finally{
+					if(null != connection){
+						connection.disconnect();
+					}
+				}
+
+
+			return null;
+		}
+		
+	}
 
 	// login page Async task class
 	public class loginTask extends AsyncTask<Object, Object, Object>{
 	//	private TaskItem aTaskItem;
 		private int httpResponseCode;
+	    private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-//			cookieValue = "";
+			progressdialog = new ProgressDialog(LoginActivity.this);
+			progressdialog.setMessage(getString(R.string.logining));
+			progressdialog.setCancelable(false);
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+			progressdialog.show();	
+
 
 		}
 
@@ -187,23 +262,25 @@ public class LoginActivity extends Activity {
 			super.onPostExecute(result);
 			accountInfo.put("username", username);
 			accountInfo.put("password", password);
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
 			switch(httpResponseCode){
-    			case 302:
-    				if(false == cookieValue.isEmpty()){
-    					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
-    					startMainActivity();
-						if (CBrememberPassword.isChecked()){
-    						accountInfo.put("rememberpassword", "true");    						
-    					}
-    					if(CBautoLogin.isChecked()){
-    						accountInfo.put("autologin", "true");
-    					}
-    					currentApplication.saveAccountInfo(accountInfo);
-    					finish();					
-    				}
-    				break;
     			case 200:
-    				loginingDialog.setMessage(getResources().getString(R.string.accountError)+httpResponseCode+cookieValue);
+					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
+					startMainActivity();
+					if (CBrememberPassword.isChecked()){
+						accountInfo.put("rememberpassword", "true");    						
+					}
+					if(CBautoLogin.isChecked()){
+						accountInfo.put("autologin", "true");
+					}
+					currentApplication.setCurrentUsername(username);
+					currentApplication.saveAccountInfo(accountInfo);
+					finish();					
+    				break;
+    			case 9999:		
+    				loginingDialog.setMessage(getResources().getString(R.string.connectfailed));
     				loginingDialog.show();
     				break;
     			case 0:
@@ -217,17 +294,6 @@ public class LoginActivity extends Activity {
     			}
 		}
 
-		@Override
-		protected void onProgressUpdate(Object... values) {
-			// TODO Auto-generated method stub
-			super.onProgressUpdate(values);
-		}
-
-		@Override
-		protected void onCancelled() {
-			// TODO Auto-generated method stub
-			super.onCancelled();
-		}
 
 		@Override
 		protected Object doInBackground(Object... params) {
@@ -240,22 +306,42 @@ public class LoginActivity extends Activity {
 				connection = (HttpURLConnection)url.openConnection();
 				connection.setDoInput(true);
 				connection.setDoOutput(true);
-				connection.setRequestMethod("POST");
-				connection.setConnectTimeout(10000);
+				connection.setRequestMethod("GET");
+				connection.setConnectTimeout(20000);
 				connection.setInstanceFollowRedirects(false);
 				connection.connect();
 				
-				OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
+/*				OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
 				osw.write("id="+username+"&pw="+password);
 				osw.flush();
-				osw.close();
+				osw.close();*/
 				httpResponseCode = connection.getResponseCode();
-				cookieValue = connection.getHeaderField("Set-Cookie");
-				currentApplication.setCookie(cookieValue);    	
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}finally{
+				if(null != connection){
+					connection.disconnect();
+				}
+				if( 200 == httpResponseCode){
+					String loginurl = "http://bbs.fudan.edu.cn/bbs/login";
+					Response res = Jsoup.connect(loginurl).data("id",username,"pw",password)
+							.timeout(10000).method(Method.POST).execute();	
+					HashMap<String, String> cookie = new HashMap<String, String>();
+					cookie.put("utmpuserid", res.cookie("utmpuserid"));
+					cookie.put("utmpkey", res.cookie("utmpkey"));
+					cookie.put("utmpnum", res.cookie("utmpnum"));
+					currentApplication.setCookie(cookie);    
+					Log.v("loginActivitycookie", cookie.get("utmpuserid"));
+				}
+
+	
+			} 
+			catch(SocketTimeoutException e){
+				httpResponseCode = 9999;
+			}
+			
+			catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+			}
+			finally{
 				if(null != connection){
 					connection.disconnect();
 				}

@@ -43,6 +43,13 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+//		super.onBackPressed();
+		moveTaskToBack(true);
+	}
+
 	static final String TAG = "MainActivity";
 
 
@@ -75,37 +82,42 @@ public class MainActivity extends Activity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
-        switch(position+1){
+        switch(position){
         case 1:
-            fragmentManager.beginTransaction()
-            .replace(R.id.container, new Top10Fragment())
-            .commit();
-            break;
-        case 2:
-            fragmentManager.beginTransaction()
-            .replace(R.id.container, new RecommendBoardFragment())
-            .commit();       	
-            break;
-        case 3:
-            fragmentManager.beginTransaction()
-            .replace(R.id.container, new MyFavoriteFragment())
-            .commit();
-            break;
-        case 4:
-            fragmentManager.beginTransaction()
-            .replace(R.id.container, new AllBoardFragment())
-            .commit();    
-            break;
-        case 5:
-            fragmentManager.beginTransaction()
-            .replace(R.id.container, new MyMailFragment())
-            .commit();
-            break;
-        case 6:
             fragmentManager.beginTransaction()
             .replace(R.id.container, new MyPreferenceFragment())
             .commit();  
             break;
+        case 2:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new Top10Fragment())
+            .commit();
+            break;
+        case 3:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new RecommendBoardFragment())
+            .commit();       	
+            break;
+        case 4:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new MyFavoriteFragment())
+            .commit();
+            break;
+        case 5:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new AllBoardFragment())
+            .commit();    
+            break;
+        case 6:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new MyMailFragment())
+            .commit();
+            break;
+        default:
+            fragmentManager.beginTransaction()
+            .replace(R.id.container, new Top10Fragment())
+            .commit();          	
+            	
         }
 
     }

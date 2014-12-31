@@ -28,6 +28,7 @@
             </intent-filter>            
         </activity>
         <activity android:name="TopicActivity"></activity>
+        <activity android:name="MailActivity"></activity>
         <activity android:name="InitiateActivity"></activity>
         <activity android:name="PostActivity"></activity>
         <activity android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:name="ImageBrowserActivity"></activity>
