@@ -61,6 +61,8 @@ public class PostActivity extends Activity {
 	private String lastfid;
 	private boolean lastpage = false;
 	private boolean flag;
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
 	private final String TAG = "#########PostActivity###########";
 	private ArrayList<HashMap<String, ArrayList<String []>>> postArrayList;
 	private postAdapter postadapter;
@@ -410,9 +412,14 @@ public class PostActivity extends Activity {
 			String gid = null;
 			String lastfid = null;
 			String last = "0";
+			currentapplication = (FudanBBSApplication)getApplication();
+			cookie = new  HashMap<String, String>();
+			cookie = currentapplication.get_cookie();
+			Log.v(TAG, "doInBackground");
+			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
 			try {
 				Log.v(TAG, "doInBackground start "+url);
-				Document doc = Jsoup.connect(url).timeout(20000).get();
+				Document doc = Jsoup.connect(url).timeout(15000).cookies(cookie).get();
 				
 				//get  bid for generating the "next page " URL path
 				Elements elements = doc.getElementsByTag("bbstcon");

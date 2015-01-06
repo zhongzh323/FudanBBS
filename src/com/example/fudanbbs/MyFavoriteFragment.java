@@ -34,21 +34,24 @@ import android.widget.AdapterView.OnItemClickListener;
  *
  */
 public class MyFavoriteFragment extends Fragment {
+
+
 	private View view;
 	private ListView listview;
 	private ArrayList<HashMap<String, String>> boardlist;
 	private FudanBBSApplication currentapplication;
 	private HashMap<String, String> cookie;
+	private boardlistAsyncTask asynctask;
+	private SimpleAdapter adapter;
 	private boolean flag;
-	private String TAG = this.getClass().getName();
+	private String TAG = "##################"+this.getClass().getName();
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			ViewGroup container, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container, savedInstanceState);
-		boardlist = new ArrayList<HashMap<String, String>>();
 		flag = false;
-		boardlistAsyncTask asynctask = new boardlistAsyncTask();
+		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
 
 		view =  inflater.inflate(R.layout.myfavoritefragement, null);
@@ -61,7 +64,7 @@ public class MyFavoriteFragment extends Fragment {
     		}
     		continue;
 		}
-    	SimpleAdapter adapter = new SimpleAdapter(view.getContext(), boardlist, 
+    	adapter = new SimpleAdapter(view.getContext(), boardlist, 
     			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
 
     	listview.setAdapter(adapter);
@@ -77,6 +80,27 @@ public class MyFavoriteFragment extends Fragment {
 			}});
 
 		return view;
+	}
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.v(TAG, "resumed");
+		flag = false;
+		asynctask = new boardlistAsyncTask();
+		asynctask.execute();
+		while(!flag){
+			try {
+				Thread.sleep(200);
+				Log.v(TAG, "sleep for 200ms");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue;
+		}	
+		adapter.notifyDataSetChanged();
+		listview.setAdapter(adapter);
 	}
 	
 public void openBoard(String boardtitle){
@@ -101,6 +125,11 @@ public void openBoard(String boardtitle){
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
 			progressdialog.show();	
+			if(null!= boardlist){
+				boardlist.clear();
+			}else{
+				boardlist = new ArrayList<HashMap<String, String>>();
+			}
 			Log.v(TAG, "onPreExecute");
 		}
 
@@ -111,28 +140,26 @@ public void openBoard(String boardtitle){
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
-
 			Log.v(TAG, "onPostExecute");
 		}
 
 		@Override
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
-			if(null!= boardlist){
-				boardlist.clear();
-			}
+
 			currentapplication = (FudanBBSApplication) getActivity().getApplication();
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
 			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
 			try {
-				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/fav").cookies(cookie).get();
+				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/fav").timeout(15000).cookies(cookie).get();
 				Elements boards = doc.getElementsByTag("brd");
 				for(Element board: boards){
 					String[] string = new String[2];
 					string[0] = board.attr("brd");
 					string[1] = board.text();
+					Log.v(TAG, string[1]);
 					HashMap<String, String> map = new HashMap<String, String>();
 					map.put("boardtitle", "["+string[0]+"] ");
 					map.put("boarddesc", string[1]);

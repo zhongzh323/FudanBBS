@@ -3,12 +3,75 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:focusable="true"
+        android:id="@+id/mailtitletable"
+        android:focusableInTouchMode="true">
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/receiver"/>
+
+            <EditText
+                android:id="@+id/mailreceiver"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+            </EditText>
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/mailtitle"/>
+
+            <EditText
+                android:id="@+id/mailtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" >
+            </EditText>            
+        </TableRow>
+
+    </TableLayout>    
     
     <TextView 
         android:id="@+id/maildetailcontent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="mailmailmail"
+        android:text="text"
         android:textAppearance="?android:attr/textAppearanceMedium"  />
+    <EditText 
+        android:id="@+id/maileditcontent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="edit text"
+        android:cursorVisible="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"  />    
+    <Button 
+        android:id="@+id/reply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:padding="10sp"
+        android:textColor="@color/lightcoral"
+        android:background="@color/fudanNavigation"
+        android:textAppearance="?android:attr/textAppearanceLarge"  />
 
 </LinearLayout>

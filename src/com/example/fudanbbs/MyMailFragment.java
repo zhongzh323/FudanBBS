@@ -55,43 +55,16 @@ public class MyMailFragment extends Fragment {
 	private ListView listview;
 	private PullToRefreshListView pulltorefreshlistview;
 	private MyMailAdapter adapter;
+	private MyMailAsyncTask asynctask;
 	static class ViewHolder{
 		TextView TVmailfrom;
 		TextView TVmaildate;
 		TextView TVmailcontent;
 		TextView TVmailnamefake;
 		TextView TVmailreadfake;
+		TextView TVmailnumberfake;
 	}
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		Log.v(TAG, "resumed");
-		flag = false;
-		maillist = new ArrayList<HashMap<String, String>>();
-		MyMailAsyncTask asynctask = new MyMailAsyncTask();
-		asynctask.execute();
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}
-		
-		adapter.notifyDataSetChanged();
-		listview.setAdapter(adapter);
-	}
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		Log.v(TAG, "paused");
-	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			ViewGroup container, Bundle savedInstanceState) {
@@ -99,8 +72,7 @@ public class MyMailFragment extends Fragment {
 //		return super.onCreateView(inflater, container,	savedInstanceState);
 		View view = inflater.inflate(R.layout.mymailfragment, null);
 		flag = false;
-		maillist = new ArrayList<HashMap<String, String>>();
-		MyMailAsyncTask asynctask = new MyMailAsyncTask();
+		asynctask = new MyMailAsyncTask();
 		asynctask.execute();
 
 		while(!flag){
@@ -146,35 +118,75 @@ public class MyMailFragment extends Fragment {
 					View view, int position, long id) {
 				// TODO Auto-generated method stub
 				TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
+    			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
+    			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
+    			TextView TVmailfrom = (TextView) view.findViewById(R.id.mailfrom);	
 				String name = TVnamefake.getText().toString().trim();
-				String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name;
+				String number= TVmailnumberfake.getText().toString().trim();
+				String mailcontent = TVmailcontent.getText().toString().trim();
+				String mailfrom = TVmailfrom.getText().toString().trim();
+				String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name+"&n="+number;
 				Intent intent = new Intent();
 				intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
-				intent.putExtra("name", mailcontentURL);
+				intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
 				startActivity(intent);
 			}
 			
 		});
 		return view;
 	}
+	
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.v(TAG, "resumed");
+		flag = false;
+		asynctask = new MyMailAsyncTask();
+		asynctask.execute();
+		while(!flag){
+			try {
+				Thread.sleep(200);
+				Log.v(TAG, "sleep for 200ms");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue;
+		}
+		
+		adapter.notifyDataSetChanged();
+		listview.setAdapter(adapter);
+	}
+	@Override
+	public void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.v(TAG, "paused");
+	}
+		
+	
 	public class MyMailAdapter extends BaseAdapter{
+
 		private LayoutInflater inflater;
 		private Context context;
-		private String from, date, content, name, read;
+		private String from, date, content, name, read, number;
 		private HashMap<String, String> map;
 		private ViewHolder holder;
+		private TextPaint tp;
 		public MyMailAdapter(Context context) {
 //			super(context, resource, objects);
 			// TODO Auto-generated constructor stub
 			this.context = context;
 			this.inflater = inflater.from(context);
+			tp = new TextPaint();
 		}
 
 		@Override
 		public int getCount() {
 			// TODO Auto-generated method stub
 //			return super.getCount();
-			return maillist.size();
+			return (null != maillist)?maillist.size():0;
 		}
 
 		@Override
@@ -191,6 +203,7 @@ public class MyMailFragment extends Fragment {
     			holder.TVmailcontent = (TextView) convertView.findViewById(R.id.mailcontent);	
     			holder.TVmailnamefake = (TextView) convertView.findViewById(R.id.mailnamefake);	
     			holder.TVmailreadfake = (TextView) convertView.findViewById(R.id.mailreadfake);	
+    			holder.TVmailnumberfake = (TextView) convertView.findViewById(R.id.mailnumberfake);	
     			convertView.setTag(holder);
 			}else{
 				holder = (ViewHolder) convertView.getTag();
@@ -212,19 +225,32 @@ public class MyMailFragment extends Fragment {
 			read = new String();
 			read = map.get("r").toString();			
 			holder.TVmailreadfake.setText(read);
+			holder.TVmailcontent = new TextView(context);
+			holder.TVmailcontent = (TextView) convertView.findViewById(R.id.mailcontent);
 			Log.v(TAG, "read is "+read);
-			if(holder.TVmailreadfake.getText().toString().equals("0")){
-				Log.v(TAG, "do paint");
-				TextPaint tp = new TextPaint();
+			if(read.equals("0")){
+				Log.v(TAG, "do paint color");
+
 				tp = holder.TVmailcontent.getPaint();
 				tp.setFakeBoldText(true);
 //				holder.TVmailcontent.setTextColor(getResources().getColor(R.color.red));
 				holder.TVmailcontent.setTextColor(Color.RED);
-			}
+			}else{
+					Log.v(TAG, "do paint color");
+					tp = new TextPaint();
+					tp = holder.TVmailcontent.getPaint();
+					tp.setFakeBoldText(false);
+//					holder.TVmailcontent.setTextColor(getResources().getColor(R.color.red));
+					holder.TVmailcontent.setTextColor(Color.BLACK);
+				}				
+
 			Log.v(TAG, "position is "+position);
 			name = new String();
 			name = map.get("name").toString();
 			holder.TVmailnamefake.setText(name);
+			number = new String();
+			number = map.get("number").toString();
+			holder.TVmailnumberfake.setText(number);
 			return convertView;
 		}
 
@@ -252,6 +278,11 @@ public class MyMailFragment extends Fragment {
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
 			progressdialog.show();
+			if(null!= maillist){
+				maillist.clear();
+			}else{
+				maillist = new ArrayList<HashMap<String, String>>();
+			}
 			Log.v(TAG, "onPreExecute");
 		}
 
@@ -276,9 +307,18 @@ public class MyMailFragment extends Fragment {
 			Log.v(TAG, "doInBackground");
 			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
 			try{
-    			Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/mail").cookies(cookie).get();   
-    			HashMap<String, String> map;  			
+    			Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/mail").timeout(15000).cookies(cookie).get();   
+    			HashMap<String, String> map;  	
+    			Elements elements = doc.getElementsByTag("bbsmail");
+    			int mailcount = 0;
+    			if(null != elements){
+        			for(Element ele: elements){
+        				mailcount = Integer.parseInt(ele.attr("total"));
+        			}
+    			}
     			Elements mails = doc.getElementsByTag("mail");
+    			int number = 0; 
+    			
     			for(Element mail: mails){
     				map = new HashMap<String, String>();
     				map.put("r", mail.attr("r").toString().trim());
@@ -286,7 +326,8 @@ public class MyMailFragment extends Fragment {
     				map.put("date", mail.attr("date").toString().trim());
     				map.put("name", mail.attr("name").toString().trim());
     				map.put("content", mail.text());
-//    				System.out.println(map.toString());
+    				map.put("number", String.valueOf(mailcount-number));
+    				number++;
     				maillist.add(map);
     			}	
 			} catch (IOException e) {
