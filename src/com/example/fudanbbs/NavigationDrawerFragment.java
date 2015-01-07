@@ -9,6 +9,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -102,12 +104,6 @@ public class NavigationDrawerFragment extends Fragment {
                 R.layout.fragment_navigation_drawer, container, false);
 
         
-/*        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(1);
-            }
-        });   */
         mDrawerListView.setAdapter(new DrawerAdapter(getActionBar().getThemedContext(), mCurrentSelectedPosition, mCurrentSelectedPosition,   
         		new String[]{
                         getString(R.string.top10board),
@@ -117,18 +113,7 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.mymail),      
                         getString(R.string.mypreference),                  
                 }));
-/*        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.top10board),
-                        getString(R.string.recommendboard),
-                        getString(R.string.myfavorite),
-                        getString(R.string.allboard),
-                        getString(R.string.mymail),      
-                        getString(R.string.mypreference),                  
-                }));*/
+
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -285,6 +270,7 @@ public class NavigationDrawerFragment extends Fragment {
     private void showGlobalContextActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.fudanNavigation)));
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setTitle(R.string.app_name);
     }
@@ -327,12 +313,43 @@ public class NavigationDrawerFragment extends Fragment {
 			}else{
 				textview.setText(currentApplication.getCurrentUsername());
 			}
+			
+
+			
 	        LinearLayout layout1 = (LinearLayout) convertView.findViewById(R.id.layout1);
 	        LinearLayout layout2 = (LinearLayout) convertView.findViewById(R.id.layout2);
 	        LinearLayout layout3 = (LinearLayout) convertView.findViewById(R.id.layout3);
 	        LinearLayout layout4 = (LinearLayout) convertView.findViewById(R.id.layout4);
 	        LinearLayout layout5 = (LinearLayout) convertView.findViewById(R.id.layout5);
 	        LinearLayout layout6 = (LinearLayout) convertView.findViewById(R.id.layout6);
+	        
+	        
+	        LinearLayout layout;
+			MainActivity ma = (MainActivity) getActivity();
+			switch(ma.currentposition){
+	        case 1:
+	        	layout = layout1;
+	            break;
+	        case 2:
+	        	layout = layout2;
+	            break;
+	        case 3:
+	        	layout = layout3;
+	            break;
+	        case 4:
+	        	layout = layout4;
+	            break;
+	        case 5:
+	        	layout = layout5;
+	            break;
+	        case 6:
+	        	layout = layout6;
+	            break;
+	        default:
+	        	layout = layout2;	
+	            				
+			}
+	        layout.setBackgroundColor(getResources().getColor(R.color.coral));
 	        OnClickListener listener = new OnClickListener(){
 
 				@Override

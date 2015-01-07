@@ -49,7 +49,7 @@ public class MainActivity extends Activity
 //		super.onBackPressed();
 		moveTaskToBack(true);
 	}
-
+	public int currentposition;
 	static final String TAG = "MainActivity";
 
 
@@ -72,6 +72,7 @@ public class MainActivity extends Activity
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
+        
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
@@ -84,36 +85,43 @@ public class MainActivity extends Activity
         FragmentManager fragmentManager = getFragmentManager();
         switch(position){
         case 1:
+        	currentposition = 1;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new MyPreferenceFragment())
             .commit();  
             break;
         case 2:
+        	currentposition = 2;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new Top10Fragment())
             .commit();
             break;
         case 3:
+        	currentposition = 3;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new RecommendBoardFragment())
             .commit();       	
             break;
         case 4:
+        	currentposition = 4;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new MyFavoriteFragment())
             .commit();
             break;
         case 5:
+        	currentposition = 5;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new AllBoardFragment())
             .commit();    
             break;
         case 6:
+        	currentposition = 6;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new MyMailFragment())
             .commit();
             break;
         default:
+        	currentposition = 2;
             fragmentManager.beginTransaction()
             .replace(R.id.container, new Top10Fragment())
             .commit();          	
