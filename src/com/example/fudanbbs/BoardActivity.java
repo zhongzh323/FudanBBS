@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.example.fudanbbs.PostActivity.postAsyncTask;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
@@ -24,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,18 +37,25 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author Joseph.Zhong
  *
  */
 public class BoardActivity extends Activity {
+	private String TAG = "##################"+this.getClass().getName();
 	private String topicmodeURL, traditionalmodeURL, bid;
 	private ArrayList<HashMap<String, String>> topicdata;
 	private Bundle bundle;
 	private boolean flag;
+	private String nextpageurl;
+	private String lastpageurl;
+	private boolean lastpage = false;
 	private ListView listview;
-	private PullToRefreshListView refreshlistview;
+	private PullToRefreshListView pulltorefreshlistview;
+	private TopicAdapter topicadapter;
+	private TopicListAsyncTask asynctask;
 
 	static class ViewHolder{
 		TextView topicowner;
@@ -59,6 +68,8 @@ public class BoardActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.topiclist);
+		traditionalmodeURL = new String();
+		topicmodeURL = new String();
 		bundle = getIntent().getExtras();
 		if(null != bundle){
 			traditionalmodeURL = bundle.getString("boardURL");		
@@ -66,8 +77,8 @@ public class BoardActivity extends Activity {
 		}
 		flag = false;
 		topicdata = new ArrayList<HashMap<String, String>>();
-		TopicListAsyncTask asynctask = new TopicListAsyncTask();
-		asynctask.execute();
+		asynctask = new TopicListAsyncTask();
+		asynctask.execute("first", traditionalmodeURL);
 		while(!flag){
 			try {
 				Thread.sleep(200);
@@ -83,22 +94,77 @@ public class BoardActivity extends Activity {
 			public void onPullDownToRefresh(
 					PullToRefreshBase<ListView> refreshView) {
 				// TODO Auto-generated method stub
-				
+				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
+						.getString(R.string.pull_to_refresh_refreshing_label));
+				pulltorefreshlistview.setRefreshing();
+				topicdata.clear();
+				flag = false;
+				asynctask = new TopicListAsyncTask();
+				asynctask.execute("first", topicmodeURL);
+				while(!flag){
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					continue;
+				}
+				new Handler().postDelayed(new Runnable(){
+
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						topicadapter.notifyDataSetChanged();
+						pulltorefreshlistview.onRefreshComplete();
+					}
+					
+				}, 0);
 			}
 
 			@Override
 			public void onPullUpToRefresh(
 					PullToRefreshBase<ListView> refreshView) {
 				// TODO Auto-generated method stub
+				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
+						.getString(R.string.pull_to_refresh_from_bottom_refreshing_label));
+				if(false == lastpage){
+    				pulltorefreshlistview.setRefreshing();
+    				flag = false;
+    				Log.v(TAG, nextpageurl);
+    				asynctask = new TopicListAsyncTask();
+    				asynctask.execute("next",nextpageurl);
+    				while(!flag){
+    					try {
+    						Thread.sleep(200);
+    					} catch (InterruptedException e) {
+    						// TODO Auto-generated catch block
+    						e.printStackTrace();
+    					}
+    					continue;
+    				}	
+				}else{
+				Toast.makeText(getApplicationContext(),getResources().getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
+			}
 				
+				new Handler().postDelayed(new Runnable(){
+				    
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+							topicadapter.notifyDataSetChanged();	
+							pulltorefreshlistview.onRefreshComplete();
+						
+					}				
+				}, 0);		
 			}
 			
 		};
-		refreshlistview = (PullToRefreshListView) findViewById(R.id.topiclistview);
-		refreshlistview.setMode(Mode.BOTH);
-		refreshlistview.setOnRefreshListener(refreshlistener);
-		listview = (ListView)refreshlistview.getRefreshableView();
-		TopicAdapter topicadapter = new TopicAdapter();
+		pulltorefreshlistview = (PullToRefreshListView) findViewById(R.id.topiclistview);
+		pulltorefreshlistview.setMode(Mode.BOTH);
+		pulltorefreshlistview.setOnRefreshListener(refreshlistener);
+		listview = (ListView)pulltorefreshlistview.getRefreshableView();
+		topicadapter = new TopicAdapter();
 		listview.setAdapter(topicadapter);
 		listview.setOnItemClickListener(new OnItemClickListener(){
 
@@ -172,7 +238,7 @@ public class BoardActivity extends Activity {
 		
 	}
 	
-    public class TopicListAsyncTask extends AsyncTask{
+    public class TopicListAsyncTask extends AsyncTask<String, Object, Object>{
     	private ProgressDialog progressdialog;
     	private HashMap<String, String> cookie;
     	private FudanBBSApplication currentapplication;
@@ -188,7 +254,8 @@ public class BoardActivity extends Activity {
 			progressdialog.show();		
 			currentapplication = (FudanBBSApplication)getApplication();
 			cookie = new  HashMap<String, String>();
-			cookie = currentapplication.get_cookie();			
+			cookie = currentapplication.get_cookie();	
+			Log.v(TAG, "onPreExecute");
 		}
 
 		@Override
@@ -198,51 +265,92 @@ public class BoardActivity extends Activity {
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
+			Log.v(TAG, "onPostExecute");
 		}
 
 		@Override
-    	protected Object doInBackground(Object... params) {
+    	protected Object doInBackground(String... params) {
     		// TODO Auto-generated method stub
-			if(traditionalmodeURL.isEmpty() == false){
-				Document doc, doc1;
-				try {    
-//					String traditionalmodeURL = "http://bbs.fudan.edu.cn/bbs/doc?board=Real_Estate";
-					if(cookie.get("utmpuserid")!=null){
-						doc = Jsoup.connect(traditionalmodeURL).cookies(cookie).get();
-					}else{
-						doc = Jsoup.connect(traditionalmodeURL).get();					
+			Log.v(TAG, "doInBackground start");		
+			HashMap<String, String> map = new HashMap<String, String>();
+			String type = params[0];
+			String url = params[1];
+			if(type.equals("first")){
+				if(url.isEmpty() == false){
+					Log.v(TAG, "passed url is "+url);
+					Document doc;
+					if(true == topicmodeURL.isEmpty()){
+	    				try {    
+	    					if(cookie.get("utmpuserid")!=null){
+	    						doc = Jsoup.connect(url).cookies(cookie).get();
+	    					}else{
+	    						doc = Jsoup.connect(url).get();					
+	    					}
+	    
+	    					Elements elements = doc.getElementsByTag("brd");
+	    					for(Element element : elements){
+	    						System.out.println(element.attr("bid"));
+	    						bid = element.attr("bid");
+	    						topicmodeURL = "http://bbs.fudan.edu.cn/bbs/tdoc?bid="+bid;
+	    						url = topicmodeURL;
+	    					}
+	    				} catch (IOException e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    				}				
 					}
-
-					Elements elements = doc.getElementsByTag("brd");
-					for(Element element : elements){
-						System.out.println(element.attr("bid"));
-						bid = element.attr("bid");
-						topicmodeURL = "http://bbs.fudan.edu.cn/bbs/tdoc?bid="+bid;
-					}
-					if(cookie.get("utmpuserid")!=null){
-						doc1 = Jsoup.connect(topicmodeURL).cookies(cookie).get();
-					}else{
-						doc1 = Jsoup.connect(topicmodeURL).get();					
-					}
-					elements.clear();
-					elements = doc1.getElementsByTag("po");
-					for(Element ele: elements){
-						HashMap<String, String> map = new HashMap<String, String>();
-						map.put("m", ele.attr("m"));
-						map.put("owner", ele.attr("owner"));
-						map.put("time", ele.attr("time"));
-						map.put("id", ele.attr("id"));
-						map.put("title", ele.text().trim());
-						topicdata.add(map);
-					}		
-					
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
-			flag = true;;
-    		return null;
+			Document doc1;
+			try{
+				if(cookie.get("utmpuserid")!=null){
+					doc1 = Jsoup.connect(url).cookies(cookie).get();
+				}else{
+					doc1 = Jsoup.connect(url).get();					
+				}
+
+				Elements elements = doc1.getElementsByTag("brd");
+				for(Element ele: elements){
+					int total = Integer.valueOf(ele.attr("total"));
+					int start = Integer.valueOf(ele.attr("start"));
+					if(1 == start){
+						lastpage = true;
+					}
+					int nextstart = start-20>0?start-20:1;
+					nextpageurl = topicmodeURL+"&start="+String.valueOf(nextstart);
+				}
+				
+				ArrayList<HashMap<String, String>> data = new ArrayList<HashMap<String, String>>();
+				elements.clear();
+				elements = doc1.getElementsByTag("po");
+				
+				for(Element ele: elements){
+					map = new HashMap<String, String>();
+					map.put("m", ele.attr("m"));
+					map.put("owner", ele.attr("owner"));
+					map.put("time", ele.attr("time"));
+					map.put("id", ele.attr("id"));
+					map.put("title", ele.text().trim());
+					Log.v(TAG, ele.text());
+					data.add(map);
+				}		
+				
+				// reverse the arraylist since the order of topic is originally inverted.
+				if(null != data){
+					for(int i=data.size()-1; i>0; i--){
+//						Log.v(TAG, data.get(i).get("title"));
+						topicdata.add(data.get(i));
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+
+		flag = true;
+		Log.v(TAG, "doInBackground end");
+		return null;
     	}
     	
     }

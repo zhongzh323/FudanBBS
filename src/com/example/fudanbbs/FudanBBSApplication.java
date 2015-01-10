@@ -1,12 +1,19 @@
 package com.example.fudanbbs;
 
+import java.io.IOException;
 import java.util.HashMap;
+
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 /**
  * @author Joseph.Zhong
@@ -15,6 +22,7 @@ import android.widget.Toast;
 public class FudanBBSApplication extends Application {
 	// test
 	final String helloworld = "whatsapp";
+	private String TAG = "##################"+this.getClass().getName();
 	
 	// global configuration 
 	final boolean ENABLE = true;
@@ -28,6 +36,7 @@ public class FudanBBSApplication extends Application {
 	boolean isCurrentUserGuest;
 	private String currentusername;
 	private HashMap<String, String> cookie;
+	private boolean flag;
 	// message related:
 	private int checkInterval;
 	private boolean checkMessage, vibrateNotification;
@@ -92,6 +101,7 @@ public class FudanBBSApplication extends Application {
 	
 	// save user account information from shared preference file 
 	public boolean saveAccountInfo(HashMap <String, String> map){
+		account = map;
 		String PrefsName = "AccountInfo";
 		SharedPreferences setting = getSharedPreferences(PrefsName, 0);
 		SharedPreferences.Editor editor = setting.edit();
@@ -102,6 +112,69 @@ public class FudanBBSApplication extends Application {
 		return editor.commit();
 		
 	}	
+	
+	//
+	public class loginAsyncTask extends AsyncTask<Object, Object, Object>{
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			if(null != cookie){
+				cookie.clear();
+			}else{
+				cookie = new HashMap<String, String>();
+			}
+			Log.v(TAG, "onPreExecute");
+		}
+
+		@Override
+		protected void onPostExecute(Object result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			Log.v(TAG, "onPostExecute");
+		}
+
+		@Override
+		protected Object doInBackground(Object... params) {
+			// TODO Auto-generated method stub
+			
+			String loginurl = "http://bbs.fudan.edu.cn/bbs/login";
+			Response res;
+			try {
+				res = Jsoup.connect(loginurl).data("id",account.get("username"),"pw",account.get("password"))
+						.timeout(15000).method(Method.POST).execute();
+//				HashMap<String, String> cookie = new HashMap<String, String>();
+				if(null != res){
+    				cookie.put("utmpuserid", res.cookie("utmpuserid"));
+    				cookie.put("utmpkey", res.cookie("utmpkey"));
+    				cookie.put("utmpnum", res.cookie("utmpnum"));
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			flag = true;
+			return null;
+		}
+		
+	}
+	
+	public void reLogin(){
+		flag = false;
+		new loginAsyncTask().execute();
+		while(!flag){
+			try {
+				Thread.sleep(200);
+				Log.v(TAG, "sleep for 200ms");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue;
+		}
+	}
+	
 	// get global cookie
 	public HashMap<String, String> get_cookie(){
 		return this.cookie;

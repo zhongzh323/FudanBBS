@@ -71,6 +71,7 @@ public class MyMailFragment extends Fragment {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container,	savedInstanceState);
 		View view = inflater.inflate(R.layout.mymailfragment, null);
+		currentapplication = (FudanBBSApplication) getActivity().getApplication();
 		flag = false;
 		asynctask = new MyMailAsyncTask();
 		asynctask.execute();
@@ -141,6 +142,7 @@ public class MyMailFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "resumed");
+		currentapplication.reLogin();
 		flag = false;
 		asynctask = new MyMailAsyncTask();
 		asynctask.execute();
@@ -301,11 +303,12 @@ public class MyMailFragment extends Fragment {
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
 			Log.v(TAG, "doInBackground start");		
-			currentapplication = (FudanBBSApplication) getActivity().getApplication();
+
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+//			Log.v(TAG, cookie.get("utmpuserid").isEmpty()?"cookie is empty":cookie.get("utmpuserid"));
+//			Log.v(TAG+" cookie", cookie.isEmpty()?"cookie is empty":"utmpuserid");
 			try{
     			Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/mail").timeout(15000).cookies(cookie).get();   
     			HashMap<String, String> map;  	

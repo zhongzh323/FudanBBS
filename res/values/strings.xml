@@ -45,4 +45,13 @@
     <string name="mailtitle">邮件主题</string>    
     <string name="sendsucceed">发送成功</string>  
     <string name="sendfailed">发送失败，请稍后重试</string>  
+    <string name="nickname">您的昵称</string>  
+    <string name="birthday">您的生日</string>  
+    <string name="gender">您的性别</string>  
+    <string name="logincount">登录次数</string>  
+    <string name="onlinetime">在线时长</string>  
+    <string name="postcount">发表贴数</string>  
+    <string name="accountsince">账号建立时间</string>  
+    <string name="lastlogintime">最后登录时间</string>  
+    <string name="IPAddress">来源IP地址</string>  
 </resources>

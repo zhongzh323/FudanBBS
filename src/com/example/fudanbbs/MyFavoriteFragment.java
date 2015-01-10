@@ -86,6 +86,7 @@ public class MyFavoriteFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "resumed");
+		currentapplication.reLogin();
 		flag = false;
 		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
@@ -151,7 +152,7 @@ public void openBoard(String boardtitle){
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+//			Log.v(TAG, cookie.get("utmpuserid").isEmpty()?"cookie is empty":cookie.get("utmpuserid"));
 			try {
 				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/fav").timeout(15000).cookies(cookie).get();
 				Elements boards = doc.getElementsByTag("brd");
