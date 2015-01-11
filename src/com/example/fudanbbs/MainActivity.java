@@ -43,16 +43,22 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+	public int currentposition;
+	static final String TAG = "MainActivity";
+	private MyPreferenceFragment mypreferencefragment;
+	private Top10Fragment top10fragment;
+	private RecommendBoardFragment recommendboardfragment;
+	private MyFavoriteFragment myfavoritefragment;
+	private AllBoardFragment allboardfragment;
+	private MyMailFragment mymailfragment;
+
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 //		super.onBackPressed();
 		moveTaskToBack(true);
 	}
-	public int currentposition;
-	static final String TAG = "MainActivity";
-
-
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -86,44 +92,65 @@ public class MainActivity extends Activity
         switch(position){
         case 1:
         	currentposition = 1;
+        	if(null==mypreferencefragment){
+        		mypreferencefragment = new MyPreferenceFragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new MyPreferenceFragment())
+            .replace(R.id.container, mypreferencefragment)
             .commit();  
             break;
         case 2:
         	currentposition = 2;
+        	if(null == top10fragment){
+        		top10fragment = new Top10Fragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new Top10Fragment())
+            .replace(R.id.container, top10fragment)
             .commit();
             break;
         case 3:
         	currentposition = 3;
+        	if(null == recommendboardfragment){
+        		recommendboardfragment = new RecommendBoardFragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new RecommendBoardFragment())
+            .replace(R.id.container, recommendboardfragment)
             .commit();       	
             break;
         case 4:
         	currentposition = 4;
+        	if(null == myfavoritefragment){
+        		myfavoritefragment = new MyFavoriteFragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new MyFavoriteFragment())
+            .replace(R.id.container, myfavoritefragment)
             .commit();
             break;
         case 5:
         	currentposition = 5;
+        	if(null == allboardfragment){
+        		allboardfragment = new AllBoardFragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new AllBoardFragment())
+            .replace(R.id.container, allboardfragment)
             .commit();    
             break;
         case 6:
         	currentposition = 6;
+        	if(null == mymailfragment){
+        		mymailfragment = new MyMailFragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new MyMailFragment())
+            .replace(R.id.container, mymailfragment)
             .commit();
             break;
         default:
         	currentposition = 2;
+        	if(null == top10fragment){
+        		top10fragment = new Top10Fragment();
+        	}
             fragmentManager.beginTransaction()
-            .replace(R.id.container, new Top10Fragment())
+            .replace(R.id.container, top10fragment)
             .commit();          	
             	
         }

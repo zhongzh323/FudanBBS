@@ -142,7 +142,6 @@ public class MyMailFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "resumed");
-		currentapplication.reLogin();
 		flag = false;
 		asynctask = new MyMailAsyncTask();
 		asynctask.execute();

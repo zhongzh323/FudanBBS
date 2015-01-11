@@ -34,8 +34,6 @@ import android.widget.AdapterView.OnItemClickListener;
  *
  */
 public class MyFavoriteFragment extends Fragment {
-
-
 	private View view;
 	private ListView listview;
 	private ArrayList<HashMap<String, String>> boardlist;
@@ -45,17 +43,15 @@ public class MyFavoriteFragment extends Fragment {
 	private SimpleAdapter adapter;
 	private boolean flag;
 	private String TAG = "##################"+this.getClass().getName();
+
 	@Override
-	public View onCreateView(LayoutInflater inflater,
-			ViewGroup container, Bundle savedInstanceState) {
+	public void onViewCreated(View view,
+			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
-//		return super.onCreateView(inflater, container, savedInstanceState);
+		super.onViewCreated(view, savedInstanceState);
 		flag = false;
 		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
-
-		view =  inflater.inflate(R.layout.myfavoritefragement, null);
-		listview = (ListView) view.findViewById(R.id.myfavoriteListView);
 		while(!flag){try {
     			Thread.sleep(200);
     		} catch (InterruptedException e) {
@@ -78,7 +74,22 @@ public class MyFavoriteFragment extends Fragment {
 				String boardtitlestring = boardtitle.getText().toString().trim();
 				openBoard(boardtitlestring.substring(1, boardtitlestring.length()-1));
 			}});
+	
+		Log.v(TAG, "onViewCreated end");
+	}
 
+
+	@Override
+	public View onCreateView(LayoutInflater inflater,
+			ViewGroup container, Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+//		return super.onCreateView(inflater, container, savedInstanceState);
+
+
+		view =  inflater.inflate(R.layout.myfavoritefragement, null);
+		listview = (ListView) view.findViewById(R.id.myfavoriteListView);
+		
+		Log.v(TAG, "onCreateView end");	
 		return view;
 	}
 	@Override
@@ -86,7 +97,6 @@ public class MyFavoriteFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "resumed");
-		currentapplication.reLogin();
 		flag = false;
 		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
