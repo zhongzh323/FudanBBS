@@ -19,22 +19,28 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
+import android.R.color;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +50,8 @@ import android.widget.Toast;
  *
  */
 public class BoardActivity extends Activity {
+
+
 	private String TAG = "##################"+this.getClass().getName();
 	private String topicmodeURL, traditionalmodeURL, bid;
 	private ArrayList<HashMap<String, String>> topicdata;
@@ -56,6 +64,7 @@ public class BoardActivity extends Activity {
 	private PullToRefreshListView pulltorefreshlistview;
 	private TopicAdapter topicadapter;
 	private TopicListAsyncTask asynctask;
+	private ImageButton IBActionBack, IBActionRefresh;
 
 	static class ViewHolder{
 		TextView topicowner;
@@ -63,11 +72,18 @@ public class BoardActivity extends Activity {
 		TextView topictitle;
 		TextView postURL;
 	}
+	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.topiclist);
+		ActionBar actionbar = getActionBar();
+		actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+		actionbar.setDisplayHomeAsUpEnabled(true);
+		actionbar.setIcon(new ColorDrawable(color.transparent));
+		
 		traditionalmodeURL = new String();
 		topicmodeURL = new String();
 		bundle = getIntent().getExtras();
@@ -167,12 +183,17 @@ public class BoardActivity extends Activity {
 		topicadapter = new TopicAdapter();
 		listview.setAdapter(topicadapter);
 		listview.setOnItemClickListener(new OnItemClickListener(){
-
+	    	private ProgressDialog progressdialog;
 			@Override
 			public void onItemClick(AdapterView<?> parent,
 					View view, int position, long id) {
 				// TODO Auto-generated method stub
-
+				progressdialog = new ProgressDialog(BoardActivity.this);
+				progressdialog.setMessage(getString(R.string.loading));
+				progressdialog.setCancelable(false);
+				progressdialog.setCanceledOnTouchOutside(false);
+				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+				progressdialog.show();						
 				TextView tv = (TextView) view.findViewById(R.id.faketext);
         		Intent intent = new Intent();
         		intent.setClassName(getApplicationContext(), "com.example.fudanbbs.PostActivity");
@@ -180,12 +201,60 @@ public class BoardActivity extends Activity {
         		bundle.putString("postURL", tv.getText().toString().trim());
         		intent.putExtras(bundle);
         		startActivity(intent);						
-
+        		progressdialog.dismiss();
 			}
 			
 		});
 	}	
-	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+
+		getMenuInflater().inflate(R.menu.boardactivitymenu, menu);
+        return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+//		return super.onOptionsItemSelected(item);
+		switch(item.getItemId()){
+		case android.R.id.home:
+			finish();
+			break;
+/*		case R.id.board_action_refresh:
+//			Toast.makeText(getApplicationContext(), "refresh clicked", Toast.LENGTH_SHORT).show();
+			pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
+					.getString(R.string.pull_to_refresh_refreshing_label));
+			pulltorefreshlistview.setRefreshing();
+			topicdata.clear();
+			flag = false;
+			asynctask = new TopicListAsyncTask();
+			asynctask.execute("first", topicmodeURL);
+			while(!flag){
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
+			}
+			new Handler().postDelayed(new Runnable(){
+
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					topicadapter.notifyDataSetChanged();
+					pulltorefreshlistview.onRefreshComplete();
+				}
+				
+			}, 0);
+			break;
+			*/
+		}
+		return true;
+	}	
 	public class TopicAdapter extends BaseAdapter{
 		ViewHolder holder;
 		LayoutInflater inflater;

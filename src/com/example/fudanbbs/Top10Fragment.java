@@ -71,14 +71,19 @@ public class Top10Fragment extends Fragment {
     	top10ListView.setAdapter(adapter);
 
         OnItemClickListener listener = new OnItemClickListener(){
-
+	    	private ProgressDialog progressdialog;
 			@Override
 			public void onItemClick(
 					AdapterView<?> parent,
 					View view, int position, long id) {
 				// TODO Auto-generated method stub
 				Log.v("Listview", "position"+position);
-
+				progressdialog = new ProgressDialog(getActivity());
+				progressdialog.setMessage(getString(R.string.loading));
+				progressdialog.setCancelable(false);
+				progressdialog.setCanceledOnTouchOutside(false);
+				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+				progressdialog.show();	
 				String gid = top10List.get(position).get("gid");
 				String board = top10List.get(position).get("board");
 				String postURL = "http://bbs.fudan.edu.cn/bbs/tcon?new=1&board="+board+"&f="
@@ -89,6 +94,7 @@ public class Top10Fragment extends Fragment {
 				bundle.putString("postURL", postURL);
 				intent.putExtras(bundle);
 				startActivity(intent);
+        		progressdialog.dismiss();
 			}
         	
         };

@@ -24,12 +24,13 @@
 	        android:layout_centerInParent="true"
 	        android:paddingTop="10sp"
 			android:paddingBottom="10sp"
+			android:layout_weight="1"
 	        android:id="@+id/drawerusername"/>
 	    <ImageView 
 	        android:layout_width="wrap_content"
 	        android:layout_height="match_parent"
 	        android:layout_alignParentRight="true"
-	        android:src="@drawable/ic_topic_more_normal"/>	    	        
+	        android:src="@drawable/ic_action_next_item"/>	    	        
 	    
 	</LinearLayout>
 

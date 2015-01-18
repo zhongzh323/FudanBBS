@@ -113,11 +113,17 @@ public class MyMailFragment extends Fragment {
 		listview = pulltorefreshlistview.getRefreshableView();		
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(new OnItemClickListener(){
-
+	    	private ProgressDialog progressdialog;
 			@Override
 			public void onItemClick(AdapterView<?> parent,
 					View view, int position, long id) {
 				// TODO Auto-generated method stub
+				progressdialog = new ProgressDialog(getActivity());
+				progressdialog.setMessage(getString(R.string.loading));
+				progressdialog.setCancelable(false);
+				progressdialog.setCanceledOnTouchOutside(false);
+				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+				progressdialog.show();		
 				TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
     			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
     			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
@@ -131,6 +137,7 @@ public class MyMailFragment extends Fragment {
 				intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
 				intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
 				startActivity(intent);
+        		progressdialog.dismiss();
 			}
 			
 		});

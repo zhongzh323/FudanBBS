@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -17,4 +17,17 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="ActionBarTheme" parent="@android:style/Theme.Holo.Light.DarkActionBar">
+        <item name="android:actionBarStyle">@style/actionBarStyle</item>
+        <item name="android:homeAsUpIndicator">@drawable/aan</item>
+    </style>
+    <style name="actionBarStyle" parent="@android:style/Widget.Holo.ActionBar">
+        <item name="android:titleTextStyle">@style/actionBarTitleTextColor</item>
+        <item name="android:background">@color/fudanNavigation</item>
+    </style>
+    
+    <style name="actionBarTitleTextColor" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/lightcoral</item>
+    </style>
+    
 </resources>

@@ -79,6 +79,13 @@ public class AllBoardFragment extends Fragment {
 		
 	}
 	public void openBoard(String boardtitle){
+		ProgressDialog progressdialog;
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+		progressdialog.show();				
 		Intent intent = new Intent();
 		intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
 		Bundle bundle = new Bundle();
@@ -86,6 +93,7 @@ public class AllBoardFragment extends Fragment {
 		bundle.putString("boardURL", boardURL);
 		intent.putExtras(bundle);
 		startActivity(intent);
+		progressdialog.dismiss();
 	}
 	public void generateAllBoardListView(){
 		AllBoardsAsyncTask task = new AllBoardsAsyncTask();

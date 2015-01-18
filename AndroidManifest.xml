@@ -16,7 +16,7 @@
         android:allowBackup="true"
         android:icon="@drawable/fudanbbs"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/ActionBarTheme" >
         <activity
             android:name="MainActivity"
             android:label="@string/app_name" >
@@ -32,7 +32,7 @@
         <activity android:name="InitiateActivity"></activity>
         <activity android:name="PostActivity"></activity>
         <activity android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:name="ImageBrowserActivity"></activity>
-        <activity android:name="BoardActivity"></activity>
+        <activity android:name="BoardActivity" android:theme="@style/ActionBarTheme"></activity>
     </application>
 
 </manifest>

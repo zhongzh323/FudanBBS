@@ -18,18 +18,22 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
+import com.example.fudanbbs.BoardActivity.TopicListAsyncTask;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnLastItemVisibleListener;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
+import android.R.color;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +42,8 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -81,6 +87,10 @@ public class PostActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		ActionBar actionbar = getActionBar();
+		actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+		actionbar.setDisplayHomeAsUpEnabled(true);
+		actionbar.setIcon(new ColorDrawable(color.transparent));
 		bundle = getIntent().getExtras();
 		url = bundle.getString("postURL");	
 		nextpageurl = "";
@@ -191,6 +201,29 @@ public class PostActivity extends Activity {
 		listview.setAdapter(postadapter);
 
 	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+
+		getMenuInflater().inflate(R.menu.postactivitymenu, menu);
+        return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+//		return super.onOptionsItemSelected(item);
+		switch(item.getItemId()){
+		case android.R.id.home:
+			finish();
+			break;
+		case R.id.share:
+			Toast.makeText(getApplicationContext(), "share", Toast.LENGTH_SHORT).show();
+			break;
+		}
+		return true;
+	}	
 	public class postAdapter extends BaseAdapter{
 		
 		private LayoutInflater inflater; 
