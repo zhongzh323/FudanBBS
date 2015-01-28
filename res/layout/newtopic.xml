@@ -1,18 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical">
+<LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical" >
-    
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
-	<EditText
-	    android:id="@+id/editText1"
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"       
+            android:layout_marginTop="6sp"
+            android:layout_marginBottom="6sp">            
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/board"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/newtopicboardname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"        
+				android:layout_marginLeft="6sp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_weight="1">
+            </TextView>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"             
+            android:layout_marginTop="6sp"
+            android:layout_marginBottom="6sp">
+
+             <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:text="@string/title"
+                 android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/newtopictitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6sp"
+                android:layout_weight="1"
+                android:focusable="true"
+                android:hint="输入帖子标题"
+                android:textAppearance="?android:attr/textAppearanceMedium" >
+
+            </EditText>
+        </TableRow>
+    </TableLayout>
+
+    <EditText
+        android:id="@+id/newpostedittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:minLines="6"
+        android:gravity="top"
+        android:hint="输入帖子内容"
+        android:inputType="textMultiLine" >
+    </EditText>
+
+	<LinearLayout 
+	    android:id="@+id/imagelayout"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:ems="10"
-	    android:inputType="textMultiLine" >
+	    android:orientation="vertical">
+	    
+	</LinearLayout>
 
-	    <requestFocus />
-	</EditText>
+    <Button
+        android:id="@+id/uploadattachmentbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/fudanNavigation"
+        android:paddingBottom="8sp"
+        android:paddingTop="8sp"
+        android:text="@string/uploadattachment"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/lightcoral" />
 
+    <Button
+        android:id="@+id/newpostbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40sp"
+        android:layout_marginBottom="40sp"
+        android:background="@color/fudanNavigation"
+        android:paddingBottom="8sp"
+        android:paddingTop="8sp"
+        android:text="@string/newpost"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/lightcoral" />
 </LinearLayout>
+
+</ScrollView>

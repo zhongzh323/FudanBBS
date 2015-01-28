@@ -217,7 +217,7 @@ public class PostActivity extends Activity {
 		switch(item.getItemId()){
 		case android.R.id.home:
 			finish();
-			break;
+			break;		
 		case R.id.share:
 			Toast.makeText(getApplicationContext(), "share", Toast.LENGTH_SHORT).show();
 			break;

@@ -78,23 +78,7 @@ public class AllBoardFragment extends Fragment {
 	public void generateAutoHintListView(){
 		
 	}
-	public void openBoard(String boardtitle){
-		ProgressDialog progressdialog;
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();				
-		Intent intent = new Intent();
-		intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-		Bundle bundle = new Bundle();
-		String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitle;
-		bundle.putString("boardURL", boardURL);
-		intent.putExtras(bundle);
-		startActivity(intent);
-		progressdialog.dismiss();
-	}
+	
 	public void generateAllBoardListView(){
 		AllBoardsAsyncTask task = new AllBoardsAsyncTask();
     	task.execute();
@@ -118,7 +102,24 @@ public class AllBoardFragment extends Fragment {
 				// TODO Auto-generated method stub
 				TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
 				String boardtitlestring = boardtitle.getText().toString().trim();
-				openBoard(boardtitlestring.substring(1, boardtitlestring.length()-1));
+				TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
+				String boarddescstring = boardtitle.getText().toString().trim();
+				ProgressDialog progressdialog;
+				progressdialog = new ProgressDialog(getActivity());
+				progressdialog.setMessage(getString(R.string.loading));
+				progressdialog.setCancelable(false);
+				progressdialog.setCanceledOnTouchOutside(false);
+				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+				progressdialog.show();				
+				Intent intent = new Intent();
+				intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+				Bundle bundle = new Bundle();
+				String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
+				bundle.putString("boardURL", boardURL);
+				bundle.putString("boardname", boarddescstring.substring(1, boarddescstring.length()-1));
+				intent.putExtras(bundle);
+				startActivity(intent);
+				progressdialog.dismiss();
 			}});
 	}
 	public class AllBoardsAsyncTask extends AsyncTask{

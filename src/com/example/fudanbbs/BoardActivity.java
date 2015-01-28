@@ -53,7 +53,7 @@ public class BoardActivity extends Activity {
 
 
 	private String TAG = "##################"+this.getClass().getName();
-	private String topicmodeURL, traditionalmodeURL, bid;
+	private String topicmodeURL, traditionalmodeURL, bid, boardname;
 	private ArrayList<HashMap<String, String>> topicdata;
 	private Bundle bundle;
 	private boolean flag;
@@ -88,7 +88,8 @@ public class BoardActivity extends Activity {
 		topicmodeURL = new String();
 		bundle = getIntent().getExtras();
 		if(null != bundle){
-			traditionalmodeURL = bundle.getString("boardURL");		
+			traditionalmodeURL = bundle.getString("boardURL");	
+			boardname = bundle.getString("boardname");
 			Log.v("TAG####################", traditionalmodeURL.toString());
 		}
 		flag = false;
@@ -222,36 +223,15 @@ public class BoardActivity extends Activity {
 		case android.R.id.home:
 			finish();
 			break;
-/*		case R.id.board_action_refresh:
-//			Toast.makeText(getApplicationContext(), "refresh clicked", Toast.LENGTH_SHORT).show();
-			pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
-					.getString(R.string.pull_to_refresh_refreshing_label));
-			pulltorefreshlistview.setRefreshing();
-			topicdata.clear();
-			flag = false;
-			asynctask = new TopicListAsyncTask();
-			asynctask.execute("first", topicmodeURL);
-			while(!flag){
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				continue;
-			}
-			new Handler().postDelayed(new Runnable(){
-
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					topicadapter.notifyDataSetChanged();
-					pulltorefreshlistview.onRefreshComplete();
-				}
-				
-			}, 0);
+		case R.id.newtopic:
+			Bundle bundle = new Bundle();
+			bundle.putString("boardname", boardname);
+			bundle.putString("bid", bid);
+			Intent intent = new Intent();
+			intent.setClassName(getApplicationContext(), "com.example.fudanbbs.NewTopicActivity");
+			intent.putExtras(bundle);
+			startActivity(intent);
 			break;
-			*/
 		}
 		return true;
 	}	

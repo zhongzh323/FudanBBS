@@ -59,7 +59,7 @@ import android.widget.Toast;
  * @author Joseph.Zhong
  *
  */
-public class NewTopicActivity extends Activity {
+public class ReplyTopicActivity extends Activity {
 	private TextView TVBoardname;
 	private EditText NewTopicTitle, ETEditText;
 	private Button ButtonUpload, ButtonNewpost;

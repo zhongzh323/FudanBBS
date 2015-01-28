@@ -51,7 +51,6 @@ public class RecommendBoardFragment extends Fragment {
     		generateView();
     		ExpandableListView listview = (ExpandableListView)rootView.findViewById(R.id.recommendBoardexpandableListView);
     		listview.setAdapter(new expandableAdapter());
-    		listview.setOnItemClickListener(new onItemClickListener());
     		listview.setOnChildClickListener(new OnChildClickListener(){
 
 				@Override
@@ -62,8 +61,24 @@ public class RecommendBoardFragment extends Fragment {
 					// TODO Auto-generated method stub
 
 					TextView boardnamefake = (TextView) v.findViewById(R.id.boardnamefake);
-					openBoard(boardnamefake.getText().toString().trim());		
-					
+					TextView boardname = (TextView) v.findViewById(R.id.boardname);
+	
+					ProgressDialog progressdialog;
+					progressdialog = new ProgressDialog(getActivity());
+					progressdialog.setMessage(getString(R.string.loading));
+					progressdialog.setCancelable(false);
+					progressdialog.setCanceledOnTouchOutside(false);
+					progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+					progressdialog.show();		
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+					Bundle bundle = new Bundle();
+					String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardnamefake.getText().toString().trim();
+					bundle.putString("boardURL", boardURL);
+					bundle.putString("boardname", boardname.getText().toString().trim());
+					intent.putExtras(bundle);
+					startActivity(intent);
+					progressdialog.dismiss();					
 					return false;
 				}
     			
@@ -92,23 +107,7 @@ public class RecommendBoardFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 	}
-	public void openBoard(String boardtitle){
-		ProgressDialog progressdialog;
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
-		Intent intent = new Intent();
-		intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-		Bundle bundle = new Bundle();
-		String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitle;
-		bundle.putString("boardURL", boardURL);
-		intent.putExtras(bundle);
-		startActivity(intent);
-		progressdialog.dismiss();
-	}
+
 	public class expandableAdapter extends BaseExpandableListAdapter{    
 		ViewHolder holder;
     	@Override
@@ -272,14 +271,6 @@ public class RecommendBoardFragment extends Fragment {
 		}
 	}
 		
-	public class onItemClickListener implements OnItemClickListener{
 
-		@Override
-		public void onItemClick(AdapterView<?> parent,
-				View view, int position, long id) {
-			// TODO Auto-generated method stub
-			
-		}
-	}
 
 }

@@ -33,6 +33,8 @@
         <activity android:name="PostActivity"></activity>
         <activity android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:name="ImageBrowserActivity"></activity>
         <activity android:name="BoardActivity" android:theme="@style/ActionBarTheme"></activity>
+        <activity android:name="NewTopicActivity"></activity>
+        <activity android:name="ReplyTopicActivity"></activity>
     </application>
 
 </manifest>

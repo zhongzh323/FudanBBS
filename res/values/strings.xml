@@ -54,4 +54,19 @@
     <string name="accountsince">账号建立时间</string>  
     <string name="lastlogintime">最后登录时间</string>  
     <string name="IPAddress">来源IP地址</string>  
+    <string name="uploadattachment">上传附件</string>  
+    <string name="board">版面</string>  
+    <string name="title">标题</string>  
+    <string name="newpost">发表</string>  
+    <string name="newposttitle">发表新帖</string>
+    <string name="newpostfailed">发表新帖失败</string>
+    <string name="attachementsizeerror">目前本版单个上传文件大小限制为[1024]KB, 允许的文件类型：jpeg/jpg/gif/png/pdf, 您上传的文件超过1024KB, 上传不成功</string>
+    <string name="titlenotnull">标题不能为空</string>
+    <string name="uploadingattachment">正在上传附件...</string>
+    <string name="newposting">新帖发送中...</string>
+    <string name="generatenewpostpage">正在生成发新帖页面...</string>
+    <string name="uploadattachmentsuccess">附件上传成功！</string>    
+    <string name="uploadattachmentfail">附件上传失败！</string> 
+    <string name="signature">本帖发送自复旦BBS安卓客户端</string>    
+    <string name="newpostsuccess">帖子发表成功！</string>            
 </resources>

@@ -42,6 +42,7 @@ public class MyFavoriteFragment extends Fragment {
 	private boardlistAsyncTask asynctask;
 	private SimpleAdapter adapter;
 	private boolean flag;
+	private ProgressDialog progressdialog;
 	private String TAG = "##################"+this.getClass().getName();
 
 	@Override
@@ -49,6 +50,12 @@ public class MyFavoriteFragment extends Fragment {
 			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onViewCreated(view, savedInstanceState);
+
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
 		flag = false;
 		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
@@ -70,9 +77,20 @@ public class MyFavoriteFragment extends Fragment {
 			public void onItemClick(AdapterView<?> parent,
 					View view, int position, long id) {
 				// TODO Auto-generated method stub
+				progressdialog.show();
 				TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
+				TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
 				String boardtitlestring = boardtitle.getText().toString().trim();
-				openBoard(boardtitlestring.substring(1, boardtitlestring.length()-1));
+				String boarddescstring = boarddesc.getText().toString().trim();
+				Intent intent = new Intent();
+				intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+				Bundle bundle = new Bundle();
+				String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
+				bundle.putString("boardURL", boardURL);
+				bundle.putString("boardname", boarddescstring);
+				intent.putExtras(bundle);
+				startActivity(intent);
+				progressdialog.dismiss();
 			}});
 	
 		Log.v(TAG, "onViewCreated end");
@@ -114,35 +132,12 @@ public class MyFavoriteFragment extends Fragment {
 		listview.setAdapter(adapter);
 	}
 	
-public void openBoard(String boardtitle){
-	ProgressDialog progressdialog;
-	progressdialog = new ProgressDialog(getActivity());
-	progressdialog.setMessage(getString(R.string.loading));
-	progressdialog.setCancelable(false);
-	progressdialog.setCanceledOnTouchOutside(false);
-	progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-	progressdialog.show();			
-	Intent intent = new Intent();
-	intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-	Bundle bundle = new Bundle();
-	String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitle;
-	bundle.putString("boardURL", boardURL);
-	intent.putExtras(bundle);
-	startActivity(intent);
-	progressdialog.dismiss();
-}
 	
 	public class boardlistAsyncTask extends AsyncTask{
-	    private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			progressdialog = new ProgressDialog(getActivity());
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCancelable(false);
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
 			progressdialog.show();	
 			if(null!= boardlist){
 				boardlist.clear();
