@@ -70,6 +70,7 @@ public class NewTopicActivity extends Activity {
 	private ProgressDialog progressdialog;
 	private AlertDialog.Builder builder;
 	private NewpostAsyncTask asynctask;
+	private int attachmentmaxsize;
 	private GetNewPostPageAsyncTask getnewpostasynctask;
 	private UploadAttachmentAsyncTask uploadattachementasynctask;
 	@Override
@@ -179,9 +180,9 @@ public class NewTopicActivity extends Activity {
             cursor.close();
             Log.v(TAG, Long.toString(size));
             Log.v(TAG, "file path is "+filepath);
-            if(size>=1048576){
+            if(size>=attachmentmaxsize){
 
-            	builder.setMessage(getResources().getString(R.string.attachementsizeerror));
+            	builder.setMessage(getResources().getString(R.string.attachementsizeerror1)+attachmentmaxsize/1024 + getResources().getString(R.string.attachementsizeerror2));
             	builder.show();
             	
             }else{
@@ -241,8 +242,23 @@ public class NewTopicActivity extends Activity {
 				for(Element element : elements){
 
 					board = element.attr("brd");
-					attachmentenability = element.attr("att");
+					attachmentenability = element.attr("att").trim();
 					Log.v(TAG, board+" "+bid+" "+attachmentenability);
+				}
+				if(attachmentenability.equals("1")){
+					url = "http://bbs.fudan.edu.cn/bbs/preupload?board="+board;
+					if(cookie.get("utmpuserid")!=null){
+						doc = Jsoup.connect(url).cookies(cookie).get();
+					}else{
+						doc = Jsoup.connect(url).get();					
+					}	
+					elements = doc.getElementsByTag("max");
+					for(Element element : elements){
+
+						attachmentmaxsize = Integer.valueOf(element.text().toString().trim());
+						attachmentmaxsize = attachmentmaxsize;
+						Log.v(TAG, "max attachment size is "+attachmentmaxsize);
+					}					
 				}
 
 			} catch (IOException e) {

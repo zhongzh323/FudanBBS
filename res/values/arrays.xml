@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name = "postoperation">
+        <item>回复本贴</item>
+        <item>什么也不干</item>
+    </string-array>
+</resources>

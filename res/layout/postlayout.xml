@@ -45,6 +45,18 @@
         android:orientation="vertical" 
         android:background="@android:color/background_light"
         android:textAppearance="?android:attr/textAppearanceMedium">
+	    <TextView
+	        android:id="@+id/postfidfake"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone">
+	    </TextView>        
+	    <TextView
+	        android:id="@+id/textimagearrayfake"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone">
+	    </TextView>     	         
     </LinearLayout>
     <LinearLayout
         android:id="@+id/postquote"
@@ -56,6 +68,12 @@
         android:textAppearance="?android:attr/textAppearanceSmallInverse"
         android:textColor="@color/postquotetext"
         android:textColorHint="@color/postquotetext" >
+	    <TextView
+	        android:id="@+id/quoteimagearrayfake"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone">	  
+	    </TextView>   	          
 	</LinearLayout>
     <LinearLayout
         android:id="@+id/postsignature"
@@ -64,6 +82,12 @@
         android:textColor="@color/darkblue" 
         android:orientation="vertical"
         android:textAppearance="?android:attr/textAppearanceSmallInverse">
+	    <TextView
+	        android:id="@+id/signatureimagearrayfake"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone">	  
+	    </TextView>  	    
 	</LinearLayout>
 	
 </LinearLayout>

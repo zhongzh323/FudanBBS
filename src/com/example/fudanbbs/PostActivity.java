@@ -28,8 +28,10 @@ import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import android.R.color;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -47,6 +49,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -64,7 +68,7 @@ public class PostActivity extends Activity {
 	private String url;
 	private String nextpageurl;
 	private String lastpageurl;
-	private String lastfid;
+	private String bid, lastfid, board;
 	private boolean lastpage = false;
 	private boolean flag;
 	private FudanBBSApplication currentapplication;
@@ -73,11 +77,17 @@ public class PostActivity extends Activity {
 	private ArrayList<HashMap<String, ArrayList<String []>>> postArrayList;
 	private postAdapter postadapter;
 	private ListView listview;
+	private AlertDialog.Builder builder;
 	static class ViewHolder{
 		public TextView postowner;
 		public TextView posttime;
 		public TextView posttitle;
 		public LinearLayout posttextlayout;
+		public TextView postbidfake;
+		public TextView postfidfake;
+		public TextView textimagearrayfake;
+		public TextView quoteimagearrayfake;
+		public TextView signatureimagearrayfake;		
 		public LinearLayout postquote;
 		public LinearLayout postsignature;
 	}
@@ -94,6 +104,8 @@ public class PostActivity extends Activity {
 		bundle = getIntent().getExtras();
 		url = bundle.getString("postURL");	
 		nextpageurl = "";
+		bid = "";
+		board = "";
 		lastfid = "";
 		Log.v(TAG, url);
 		setContentView(R.layout.postlist);	
@@ -200,6 +212,7 @@ public class PostActivity extends Activity {
 		postadapter = new postAdapter(PostActivity.this);
 		listview.setAdapter(postadapter);
 
+
 	}
 	
 	@Override
@@ -270,8 +283,12 @@ public class PostActivity extends Activity {
 				holder.posttime = (TextView) convertView.findViewById(R.id.posttime);
 				holder.posttitle = (TextView) convertView.findViewById(R.id.posttitle);
 				holder.posttextlayout = (LinearLayout) convertView.findViewById(R.id.posttextlayout);
+				holder.postfidfake = (TextView) convertView.findViewById(R.id.postfidfake);
+				holder.textimagearrayfake = (TextView) convertView.findViewById(R.id.textimagearrayfake);
 				holder.postquote = (LinearLayout) convertView.findViewById(R.id.postquote);
+				holder.quoteimagearrayfake = (TextView) convertView.findViewById(R.id.quoteimagearrayfake);
 				holder.postsignature = (LinearLayout) convertView.findViewById(R.id.postsignature);
+				holder.signatureimagearrayfake = (TextView) convertView.findViewById(R.id.signatureimagearrayfake);
 				convertView.setTag(holder);
 			}else{
 				holder = (ViewHolder) convertView.getTag();
@@ -291,39 +308,73 @@ public class PostActivity extends Activity {
 			layout = holder.posttextlayout;
 			holder.posttextlayout.removeAllViewsInLayout();
 			textsize = 18;
+			
+			temparray = new String[2];
+			temparray = postArrayList.get(position).get("fid").get(0);
+			Log.v(TAG, "fid is "+temparray[1]);
+			holder.postfidfake.setText(temparray[1]);
+			layout.addView(holder.postfidfake);
+			OnClickListener listener = new OnClickListener(){
+
+				private String fid;
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+				TextView TVfid =(TextView) v.findViewById(R.id.postfidfake);
+				fid = TVfid.getText().toString().trim();
+				builder = new AlertDialog.Builder(PostActivity.this);
+				builder.setTitle(getString(R.string.postoperations));
+				builder.setItems(R.array.postoperation, new DialogInterface.OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog,
+							int which) {
+						// TODO Auto-generated method stub
+						Log.v(TAG, "choosed item number "+which);
+//						Toast.makeText(getApplicationContext(), "choosed item number "+which,Toast.LENGTH_SHORT).show();
+						switch(which){
+						case 0:
+//							Toast.makeText(getApplicationContext(), "clicked 0", Toast.LENGTH_SHORT).show();
+							Intent intent = new Intent();
+							Bundle bundle = new Bundle();
+							Log.v(TAG, "bid is "+bid);
+							bundle.putString("bid", bid);
+							bundle.putString("fid", fid);
+							bundle.putString("board", board);
+							Log.v(TAG, "board is "+board);
+							intent.putExtras(bundle);
+							intent.setClassName(getApplicationContext(), "com.example.fudanbbs.ReplyTopicActivity");	
+							startActivity(intent);
+						case 1:
+//							Toast.makeText(getApplicationContext(), "clicked 1", Toast.LENGTH_SHORT).show();					
+							break;
+						}
+				
+					}});
+				builder.show();			
+				}
+				};
+
+			layout.setOnClickListener(listener);
+
 			createView(postArrayList.get(position).get("body"), postArrayList.get(position).get("bodyimage"), textsize);
-			holder.postquote.removeAllViewsInLayout();
-			layout = holder.postquote;
-			textsize = 15;
-			createView(postArrayList.get(position).get("quote"), null, textsize);
-			holder.postsignature.removeAllViewsInLayout();
-			layout = holder.postsignature;
+			ArrayList<String []> quote = postArrayList.get(position).get("signature");
+			if(null != quote){
+    			holder.postquote.removeAllViewsInLayout();
+    			layout = holder.postquote;
+    			textsize = 15;
+    			createView(postArrayList.get(position).get("quote"), null, textsize);
+			}
 			ArrayList<String []> sig = postArrayList.get(position).get("signature");
 			if(null != sig){
+				holder.postsignature.removeAllViewsInLayout();
+				layout = holder.postsignature;
 				createView(sig,postArrayList.get(position).get("signatureimage"), textsize);
 			}
 
 			return convertView;
 		}
-		private void createXImageView(String aURL, ArrayList<String[]> imagelist){
-			XImageView xiv = new XImageView(context, aURL, imagelist);
-			xiv.setlistener();
-			layout.addView(xiv);	
-		}
-		private void createTextView(String text, int textsize){
-			TextView tv = new TextView(context);
-			tv.setText(text);
-			tv.setTextSize(textsize);
-//			Log.v(TAG, text);
-			layout.addView(tv);			
-		}
-		private void createhrefTextView(String aURL){
-			TextView hreftv = new TextView(context);
-			hreftv.setText(aURL);
-			hreftv.setAutoLinkMask(Linkify.ALL);
-			hreftv.setMovementMethod(LinkMovementMethod.getInstance());
-			layout.addView(hreftv);				
-		}
+
 		private void createView(ArrayList<String[]> arraylist, ArrayList<String[]> imagelist, int textsize){
 			ArrayList<String[]> templist = new ArrayList<String[]>();
 			templist = arraylist;
@@ -332,13 +383,23 @@ public class PostActivity extends Activity {
 				temparray = templist.get(i);
     			switch(temparray[0]){
         			case "text":
-        				createTextView(temparray[1], textsize);
+        				TextView tv = new TextView(context);
+        				tv.setText(temparray[1]);
+        				tv.setTextSize(textsize);
+//        				Log.v(TAG, text);
+        				layout.addView(tv);			
         				break;
         			case "imagehref":
-        				createXImageView(temparray[1], imagelist);
+        				XImageView xiv = new XImageView(context, temparray[1], imagelist);
+        				xiv.setlistener();
+        				layout.addView(xiv);	
         				break;
         			case "regularhref":
-        				createhrefTextView(temparray[1]);
+        				TextView hreftv = new TextView(context);
+        				hreftv.setText(temparray[1]);
+        				hreftv.setAutoLinkMask(Linkify.ALL);
+        				hreftv.setMovementMethod(LinkMovementMethod.getInstance());
+        				layout.addView(hreftv);		
         				break;
     			}
 			}
@@ -441,7 +502,6 @@ public class PostActivity extends Activity {
 			// TODO Auto-generated method stub
 
 			String url = params[0];
-			String bid = null;
 			String gid = null;
 			String lastfid = null;
 			String last = "0";
@@ -457,7 +517,10 @@ public class PostActivity extends Activity {
 				//get  bid for generating the "next page " URL path
 				Elements elements = doc.getElementsByTag("bbstcon");
 				for(Element e: elements){
-    				bid = e.attr("bid").toString().trim();
+					if(true == bid.isEmpty()){
+						bid = e.attr("bid").toString().trim();
+					}
+
     				gid = e.attr("gid").toString().trim();
     				if(e.hasAttr("last")){
     					lastpage = true;
@@ -486,6 +549,7 @@ public class PostActivity extends Activity {
     					String [] arraystring = new String [2];
     					arraystring[0] = "text";
     					lastfid = arraystring[1] = e.attr("fid").toString().trim();
+//    					Log.v(TAG, "fid is "+lastfid);
     					arrayfid.add(arraystring);
     					map.put("fid", arrayfid);
     
@@ -508,7 +572,11 @@ public class PostActivity extends Activity {
     					arraystring[0] = "text";
     					arraystring[1] = e.getElementsByTag("date").text().toString().trim();
     					arraydate.add(arraystring);			
-    					map.put("date", arraydate);						
+    					map.put("date", arraydate);		
+    					
+    					if(board.isEmpty()){
+    						board = e.getElementsByTag("board").text().toString().trim();
+    					}
     
     					Elements body = e.getElementsByAttributeValue("m", "t");
     					for(Element body1: body){

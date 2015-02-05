@@ -52,6 +52,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,14 +64,17 @@ public class ReplyTopicActivity extends Activity {
 	private TextView TVBoardname;
 	private EditText NewTopicTitle, ETEditText;
 	private Button ButtonUpload, ButtonNewpost;
-	private String board, boardURL, boardname, bid, attachmentenability;
+	private String board, boardURL, fid, bid, attachmentenability;
 	private ArrayList<String> attachmenturlarraylist;
 	private String TAG = "#########"+this.getClass().getName();
 	private LinearLayout imagelayout;
 	private ProgressDialog progressdialog;
 	private AlertDialog.Builder builder;
-	private NewpostAsyncTask asynctask;
-	private GetNewPostPageAsyncTask getnewpostasynctask;
+	private ReplypostAsyncTask asynctask;
+	private int attachmentmaxsize;
+	private String owner, nick, title;
+	private String replytext;
+	private GetReplyPostPageAsyncTask getnewpostasynctask;
 	private UploadAttachmentAsyncTask uploadattachementasynctask;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +101,10 @@ public class ReplyTopicActivity extends Activity {
     	
 		Bundle bundle = getIntent().getExtras();
 		bid = bundle.getString("bid");
-		boardname = bundle.getString("boardname");
-		TVBoardname = (TextView) findViewById(R.id.newtopicboardname);
-		TVBoardname.setText(boardname);
+		fid = bundle.getString("fid");
+		board = bundle.getString("board");
+		TableRow tablerow = (TableRow) findViewById(R.id.tableRow1);
+		tablerow.setVisibility(View.GONE);
 		NewTopicTitle = (EditText) findViewById(R.id.newtopictitle);
 		ETEditText = (EditText) findViewById(R.id.newpostedittext);
 		imagelayout = (LinearLayout)findViewById(R.id.imagelayout);
@@ -127,7 +132,7 @@ public class ReplyTopicActivity extends Activity {
 		            	builder.setMessage(getResources().getString(R.string.titlenotnull));
 		            	builder.show();						
 					}else{
-    					asynctask = new NewpostAsyncTask();
+    					asynctask = new ReplypostAsyncTask();
     					asynctask.execute();			
     					break;
     				}
@@ -138,7 +143,7 @@ public class ReplyTopicActivity extends Activity {
 
 		ButtonUpload.setOnClickListener(listener);
 		ButtonNewpost.setOnClickListener(listener);
-		getnewpostasynctask = new GetNewPostPageAsyncTask();
+		getnewpostasynctask = new GetReplyPostPageAsyncTask();
 		getnewpostasynctask.execute();
 	}
 	
@@ -179,9 +184,9 @@ public class ReplyTopicActivity extends Activity {
             cursor.close();
             Log.v(TAG, Long.toString(size));
             Log.v(TAG, "file path is "+filepath);
-            if(size>=1048576){
+            if(size>=attachmentmaxsize){
 
-            	builder.setMessage(getResources().getString(R.string.attachementsizeerror));
+            	builder.setMessage(getResources().getString(R.string.attachementsizeerror1)+attachmentmaxsize/1024 + getResources().getString(R.string.attachementsizeerror2));
             	builder.show();
             	
             }else{
@@ -193,9 +198,10 @@ public class ReplyTopicActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
-	protected class GetNewPostPageAsyncTask extends AsyncTask<Object, Object, Object>{
+	protected class GetReplyPostPageAsyncTask extends AsyncTask<Object, Object, Object>{
     	private HashMap<String, String> cookie;
     	private FudanBBSApplication currentapplication;
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
@@ -213,11 +219,22 @@ public class ReplyTopicActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			if(attachmentenability.equals("0")){
-				ButtonUpload.setVisibility(View.GONE);
-				Log.v(TAG, "attachment disabled");
+			if(attachmentmaxsize>0){
+				Log.v(TAG, "attachment enabled");
 			}else{
-				Log.v(TAG, "attachment enabled");				
+				ButtonUpload.setVisibility(View.GONE);
+				Log.v(TAG, "attachment disabled");				
+			}
+			if(false == title.isEmpty()){
+				NewTopicTitle.setText(title);
+				NewTopicTitle.clearFocus();
+			}
+			if(false == replytext.isEmpty()){
+				ETEditText.setText("\n\n"+replytext);
+				ETEditText.setSelection(0);
+				ETEditText.requestFocus();
+				ETEditText.setFocusable(true);
+				
 			}
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
@@ -228,7 +245,7 @@ public class ReplyTopicActivity extends Activity {
 		@Override
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
-			String url = "http://bbs.fudan.edu.cn/bbs/pst?bid="+bid;
+			String url = "http://bbs.fudan.edu.cn/bbs/con?new=1&bid="+bid+"&f="+fid;
 			Log.v(TAG, url);
 			Document doc;
 			try {
@@ -237,12 +254,47 @@ public class ReplyTopicActivity extends Activity {
 				}else{
 					doc = Jsoup.connect(url).get();					
 				}	
-				Elements elements = doc.getElementsByTag("bbspst");
+				Elements elements = doc.getElementsByTag("bbscon");
 				for(Element element : elements){
 
-					board = element.attr("brd");
-					attachmentenability = element.attr("att");
-					Log.v(TAG, board+" "+bid+" "+attachmentenability);
+					attachmentmaxsize = (Integer.valueOf(element.attr("attach").toString().trim()));
+					Log.v(TAG, "max attachment size is "+attachmentmaxsize);
+				}
+				elements = doc.getElementsByTag("po");
+				for(Element element : elements){
+					for(Element element3: element.getAllElements()){
+//    					Log.v(TAG, element3.html());
+//    					Log.v(TAG, "tag name is "+element3.tagName());
+//    					Log.v(TAG, "tag attr is "+element3.attr("m").toString());
+    					if("owner".equals(element3.tagName())){
+    						owner = element3.text().toString().trim();
+    					}
+    					if("nick".equals(element3.tagName())){
+    						nick = element3.text().toString().trim();
+    					}
+    					if("title".equals(element3.tagName())){
+    						title = element3.text().toString().trim();
+    						if(false == title.contains("Re")){
+    							title = "Re: "+title;
+    						}
+    					}
+//    					Log.v(TAG, "owner is "+owner+" nick is "+nick+" title is "+title);
+//    					replytext = "<pa m='q'>"+replytext; 
+    					replytext = getString(R.string.replytext1)+owner+getString(R.string.replytext2)+"\n";
+					}
+					Elements elements2 = doc.getElementsByAttributeValue("m", "t");
+
+						for(Element element4: elements2){
+							for(Element element5: element4.getElementsByTag("p")){
+								String content = element5.text().toString().trim();
+								Log.v(TAG, "content is "+content);
+								if(!content.isEmpty()){
+									replytext = replytext +":"+ element5.text().toString()+"\n";												
+								}
+					
+							}
+						}
+//				replytext = replytext + "</pa>";		
 				}
 
 			} catch (IOException e) {
@@ -254,13 +306,14 @@ public class ReplyTopicActivity extends Activity {
 		
 	}
 	
- 	protected class NewpostAsyncTask extends AsyncTask<Object, Object, Object>{
+ 	protected class ReplypostAsyncTask extends AsyncTask<Object, Object, Object>{
     	private HashMap<String, String> cookie;
     	private StringBuffer cookiestring;
     	private FudanBBSApplication currentapplication;		
     	private HttpURLConnection con;
     	private String topictitle, topictext, topiccontent;
     	private int responsecode;
+    	private String responsemessage;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
@@ -292,7 +345,7 @@ public class ReplyTopicActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			if(200 == responsecode){
+			if(200 == responsecode && responsemessage.equals("OK")){
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.newpostsuccess), Toast.LENGTH_SHORT).show();
 				finish();
 			}
@@ -306,7 +359,7 @@ public class ReplyTopicActivity extends Activity {
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
 			try {
-				URL url = new URL("http://bbs.fudan.edu.cn/bbs/snd?bid="+bid+"&f=&e=0");
+				URL url = new URL("http://bbs.fudan.edu.cn/bbs/snd?bid="+bid+"&f="+fid+"&utf8=1");
 				con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("POST");
 				con.setConnectTimeout(15000);
@@ -315,7 +368,7 @@ public class ReplyTopicActivity extends Activity {
   	          	con.setUseCaches(false);
 				con.setRequestProperty("Cookie", cookiestring.toString());
 				con.setRequestProperty("Charset", "utf-8");
-				con.setRequestProperty("Referer", "http://bbs.fudan.edu.cn/bbs/pst?bid="+bid);
+				con.setRequestProperty("Referer", "http://bbs.fudan.edu.cn/bbs/con?new=1&bid="+bid+"&f="+fid);
 				con.setRequestProperty("Connection", "keep-alive");
 				con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 				con.setRequestProperty("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
@@ -325,11 +378,12 @@ public class ReplyTopicActivity extends Activity {
 
 
 				Log.v(TAG, content.toString());
-				ds.write(content.toString().getBytes("gb18030"));
+				ds.write(content.toString().getBytes("utf-8"));
 
 				ds.flush();
     	        ds.close();
     	        responsecode= con.getResponseCode();
+    	        responsemessage = con.getResponseMessage();
     	        con.disconnect();
 
 			} catch (MalformedURLException e) {
@@ -472,7 +526,11 @@ public class ReplyTopicActivity extends Activity {
 		                response.append(oneLine + lineEnd);  
 		            }  
 		          if(null != response){
-		        	  attachmenturl = response.substring(response.indexOf("<url>")+5, response.indexOf("</url>"));
+		        	  try{
+		        		  attachmenturl = response.substring(response.indexOf("<url>")+5, response.indexOf("</url>"));
+		        	  }catch(Exception e){
+		        		  e.printStackTrace();
+		        	  }
 		        	  Log.v(TAG, "attachment url is "+attachmenturl);
 		          }
 
