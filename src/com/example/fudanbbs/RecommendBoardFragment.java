@@ -18,6 +18,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,11 +33,13 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class RecommendBoardFragment extends Fragment {
 	private ArrayList<HashMap<String, ArrayList<String[]>>> recommendboardlist;
-	private boolean flag;
 	private View rootView;
 	private int textsize;
 	private FudanBBSApplication currentapplication;
 	private HashMap<String, String> cookie;
+	private ProgressDialog progressdialog;
+	private ExpandableListView listview;
+	private expandableAdapter adapter;
 	static class ViewHolder{
 		TextView boardname;
 		TextView boardnamefake;
@@ -46,60 +49,17 @@ public class RecommendBoardFragment extends Fragment {
 			ViewGroup container, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		
-		if(null == rootView){
-    		rootView = inflater.inflate(R.layout.recommendboardfragment, container,false);
-    		generateView();
-    		ExpandableListView listview = (ExpandableListView)rootView.findViewById(R.id.recommendBoardexpandableListView);
-    		listview.setAdapter(new expandableAdapter());
-    		listview.setOnChildClickListener(new OnChildClickListener(){
-
-				@Override
-				public boolean onChildClick(
-						ExpandableListView parent, View v,
-						int groupPosition,
-						int childPosition, long id) {
-					// TODO Auto-generated method stub
-
-					TextView boardnamefake = (TextView) v.findViewById(R.id.boardnamefake);
-					TextView boardname = (TextView) v.findViewById(R.id.boardname);
-	
-					ProgressDialog progressdialog;
-					progressdialog = new ProgressDialog(getActivity());
-					progressdialog.setMessage(getString(R.string.loading));
-					progressdialog.setCancelable(false);
-					progressdialog.setCanceledOnTouchOutside(false);
-					progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-					progressdialog.show();		
-					Intent intent = new Intent();
-					intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-					Bundle bundle = new Bundle();
-					String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardnamefake.getText().toString().trim();
-					bundle.putString("boardURL", boardURL);
-					bundle.putString("boardname", boardname.getText().toString().trim());
-					intent.putExtras(bundle);
-					startActivity(intent);
-					progressdialog.dismiss();					
-					return false;
-				}
-    			
-    		});
-		}
+		rootView = inflater.inflate(R.layout.recommendboardfragment, container,false);		  	
+		listview = (ExpandableListView)rootView.findViewById(R.id.recommendBoardexpandableListView);
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
 		textsize = 20;
-		return rootView;
-	}
-	public void generateView(){
-		flag = false;
 		recommendBoardAsyncTask task = new recommendBoardAsyncTask();
     	task.execute();
-		while(!flag){
-			try {
-			Thread.sleep(200);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		continue;
-		}
+		return rootView;
 	}
 
 	@Override
@@ -204,24 +164,51 @@ public class RecommendBoardFragment extends Fragment {
 	}
 	
 	public class recommendBoardAsyncTask extends AsyncTask{
-		private ProgressDialog progressdialog;
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			recommendboardlist = new ArrayList<HashMap<String, ArrayList<String[]>>>();	
-			progressdialog = new ProgressDialog(getActivity());
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCancelable(false);
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+
 			progressdialog.show();		
+			if(null == recommendboardlist){
+				recommendboardlist = new ArrayList<HashMap<String, ArrayList<String[]>>>();	
+			}else{
+				recommendboardlist.clear();
+			}
+
 		}
 
 		@Override
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+    		adapter = new expandableAdapter();
+    		listview.setAdapter(adapter);
+    		listview.setOnChildClickListener(new OnChildClickListener(){
+
+				@Override
+				public boolean onChildClick(
+						ExpandableListView parent, View v,
+						int groupPosition,
+						int childPosition, long id) {
+					// TODO Auto-generated method stub
+
+					TextView boardnamefake = (TextView) v.findViewById(R.id.boardnamefake);
+					TextView boardname = (TextView) v.findViewById(R.id.boardname);
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+					Bundle bundle = new Bundle();
+					String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardnamefake.getText().toString().trim();
+					bundle.putString("boardURL", boardURL);
+					bundle.putString("boardname", boardname.getText().toString().trim());
+					intent.putExtras(bundle);
+					startActivity(intent);			
+					return false;
+				}
+    			
+    		});
+
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
@@ -266,7 +253,6 @@ public class RecommendBoardFragment extends Fragment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			flag = true;
 			return null;
 		}
 	}

@@ -10,20 +10,23 @@
         android:layout_height="wrap_content" 
         android:iconifiedByDefault="false"
         android:inputType="textFilter"
-        android:queryHint="@string/searchhint">
+        android:queryHint="@string/searchhint"
+        android:visibility="gone">
 
     </SearchView>
 
 	<TextView
 	    android:id="@+id/lastusedhint"
 	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content" >
+	    android:layout_height="wrap_content"         
+	    android:visibility="gone">
 
 	</TextView>
     <ListView
         android:id="@+id/lastusedhintlistView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content" 
+        android:visibility="gone">
     </ListView>	
     <ListView
         android:id="@+id/autohintlistView"

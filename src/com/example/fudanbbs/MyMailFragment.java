@@ -48,14 +48,13 @@ import android.widget.TextView;
 public class MyMailFragment extends Fragment {
 
 	private String TAG = "##################"+this.getClass().getName();
-	private boolean flag;
 	private ArrayList<HashMap<String, String>> maillist;
-	private FudanBBSApplication currentapplication;
-	private HashMap<String, String> cookie;
+
 	private ListView listview;
 	private PullToRefreshListView pulltorefreshlistview;
 	private MyMailAdapter adapter;
 	private MyMailAsyncTask asynctask;
+	private ProgressDialog progressdialog;
 	static class ViewHolder{
 		TextView TVmailfrom;
 		TextView TVmaildate;
@@ -71,76 +70,15 @@ public class MyMailFragment extends Fragment {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container,	savedInstanceState);
 		View view = inflater.inflate(R.layout.mymailfragment, null);
-		currentapplication = (FudanBBSApplication) getActivity().getApplication();
-		flag = false;
+		pulltorefreshlistview = (PullToRefreshListView)view.findViewById(R.id.maillistview);
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
+
 		asynctask = new MyMailAsyncTask();
 		asynctask.execute();
 
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}
-		OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
-
-			@Override
-			public void onPullDownToRefresh(
-					PullToRefreshBase<ListView> refreshView) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onPullUpToRefresh(
-					PullToRefreshBase<ListView> refreshView) {
-				// TODO Auto-generated method stub
-				
-			}
-
-
-			
-		};
-		adapter = new MyMailAdapter(this.getActivity());
-		pulltorefreshlistview = (PullToRefreshListView)view.findViewById(R.id.maillistview);
-		pulltorefreshlistview.setMode(Mode.BOTH);
-
-		pulltorefreshlistview.setOnRefreshListener(refreshlistener);
-		listview = pulltorefreshlistview.getRefreshableView();		
-		listview.setAdapter(adapter);
-		listview.setOnItemClickListener(new OnItemClickListener(){
-	    	private ProgressDialog progressdialog;
-			@Override
-			public void onItemClick(AdapterView<?> parent,
-					View view, int position, long id) {
-				// TODO Auto-generated method stub
-				progressdialog = new ProgressDialog(getActivity());
-				progressdialog.setMessage(getString(R.string.loading));
-				progressdialog.setCancelable(false);
-				progressdialog.setCanceledOnTouchOutside(false);
-				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-				progressdialog.show();		
-				TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
-    			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
-    			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
-    			TextView TVmailfrom = (TextView) view.findViewById(R.id.mailfrom);	
-				String name = TVnamefake.getText().toString().trim();
-				String number= TVmailnumberfake.getText().toString().trim();
-				String mailcontent = TVmailcontent.getText().toString().trim();
-				String mailfrom = TVmailfrom.getText().toString().trim();
-				String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name+"&n="+number;
-				Intent intent = new Intent();
-				intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
-				intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
-				startActivity(intent);
-        		progressdialog.dismiss();
-			}
-			
-		});
 		return view;
 	}
 	
@@ -149,22 +87,10 @@ public class MyMailFragment extends Fragment {
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "resumed");
-		flag = false;
+
 		asynctask = new MyMailAsyncTask();
 		asynctask.execute();
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}
 		
-		adapter.notifyDataSetChanged();
-		listview.setAdapter(adapter);
 	}
 	@Override
 	public void onPause() {
@@ -276,15 +202,13 @@ public class MyMailFragment extends Fragment {
 		
 	}
 	public class MyMailAsyncTask extends AsyncTask{
-		private ProgressDialog progressdialog;
+		private FudanBBSApplication currentapplication;
+		private HashMap<String, String> cookie;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			progressdialog = new ProgressDialog(getActivity());
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
+
 			progressdialog.show();
 			if(null!= maillist){
 				maillist.clear();
@@ -298,6 +222,54 @@ public class MyMailFragment extends Fragment {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			
+
+			pulltorefreshlistview.setMode(Mode.BOTH);
+			OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
+
+				@Override
+				public void onPullDownToRefresh(
+						PullToRefreshBase<ListView> refreshView) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onPullUpToRefresh(
+						PullToRefreshBase<ListView> refreshView) {
+					// TODO Auto-generated method stub
+					
+				}			
+			};
+
+			pulltorefreshlistview.setOnRefreshListener(refreshlistener);
+			adapter = new MyMailAdapter(getActivity());
+
+			listview = pulltorefreshlistview.getRefreshableView();		
+			listview.setAdapter(adapter);
+			listview.setOnItemClickListener(new OnItemClickListener(){
+				@Override
+				public void onItemClick(AdapterView<?> parent,
+						View view, int position, long id) {
+					// TODO Auto-generated method stub
+					TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
+	    			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
+	    			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
+	    			TextView TVmailfrom = (TextView) view.findViewById(R.id.mailfrom);	
+					String name = TVnamefake.getText().toString().trim();
+					String number= TVmailnumberfake.getText().toString().trim();
+					String mailcontent = TVmailcontent.getText().toString().trim();
+					String mailfrom = TVmailfrom.getText().toString().trim();
+					String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name+"&n="+number;
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
+					intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
+					startActivity(intent);
+
+				}
+				
+			});
+			
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();				
 			}
@@ -309,7 +281,7 @@ public class MyMailFragment extends Fragment {
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
 			Log.v(TAG, "doInBackground start");		
-
+			currentapplication = (FudanBBSApplication) getActivity().getApplication();
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
@@ -344,7 +316,6 @@ public class MyMailFragment extends Fragment {
 				e.printStackTrace();
 			}
 			Log.v(TAG, "doInBackground end");
-			flag = true;
 			return null;
 		}
 		

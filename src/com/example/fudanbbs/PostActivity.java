@@ -70,13 +70,12 @@ public class PostActivity extends Activity {
 	private String lastpageurl;
 	private String bid, lastfid, board;
 	private boolean lastpage = false;
-	private boolean flag;
-	private FudanBBSApplication currentapplication;
-	private HashMap<String, String> cookie;
+
 	private final String TAG = "#########PostActivity###########";
 	private ArrayList<HashMap<String, ArrayList<String []>>> postArrayList;
 	private postAdapter postadapter;
 	private ListView listview;
+	private OnRefreshListener2<ListView> refreshlistener;
 	private AlertDialog.Builder builder;
 	static class ViewHolder{
 		public TextView postowner;
@@ -109,9 +108,8 @@ public class PostActivity extends Activity {
 		lastfid = "";
 		Log.v(TAG, url);
 		setContentView(R.layout.postlist);	
-		
-
-		OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
+	
+		refreshlistener = new OnRefreshListener2<ListView>(){
 			
 			@Override
 			public void onPullDownToRefresh(
@@ -120,29 +118,9 @@ public class PostActivity extends Activity {
 				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
 						.getString(R.string.pull_to_refresh_refreshing_label));
 				pulltorefreshlistview.setRefreshing();
-				postArrayList.clear();
-				flag = false;
-				postAsyncTask postasynctask = new postAsyncTask();
-				postasynctask.execute(url);	
-				while(!flag){
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					continue;
-				}
-				new Handler().postDelayed(new Runnable(){
 
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						postadapter.notifyDataSetChanged();
-						pulltorefreshlistview.onRefreshComplete();
-					}
-					
-				}, 0);				
+				postAsyncTask postasynctask = new postAsyncTask();
+				postasynctask.execute(url);			
 			}
 
 			@Override
@@ -153,31 +131,27 @@ public class PostActivity extends Activity {
 						.getString(R.string.pull_to_refresh_from_bottom_refreshing_label));
 				if(false == lastpage){
     				pulltorefreshlistview.setRefreshing();
-    				flag = false;
     				postAsyncTask postasynctask = new postAsyncTask();
     				postasynctask.execute(nextpageurl);
-    				while(!flag){
-    					try {
-    						Thread.sleep(200);
-    					} catch (InterruptedException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    					}
-    					continue;
-    				}	
+
 				}else{
-				Toast.makeText(getApplicationContext(),getResources().getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
+					Log.v(TAG, "is last page!");
+//					pulltorefreshlistview.setRefreshing(false);
+					if(pulltorefreshlistview.isRefreshing()){
+						new Handler().postDelayed(new Runnable(){
+
+							@Override
+							public void run() {
+								// TODO Auto-generated method stub
+//								postadapter.notifyDataSetChanged();
+								pulltorefreshlistview.onRefreshComplete();
+							}
+							
+						}, 0);						
+					}
+
+					Toast.makeText(getApplicationContext(),getResources().getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
 			}	
-				new Handler().postDelayed(new Runnable(){
-				    
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-							postadapter.notifyDataSetChanged();	
-							pulltorefreshlistview.onRefreshComplete();
-						
-					}				
-				}, 0);			
 			}
 		};
 		OnLastItemVisibleListener onlastitemvisiblelistener = new OnLastItemVisibleListener(){
@@ -190,20 +164,8 @@ public class PostActivity extends Activity {
 			
 		};
 
-		flag = false;
+
 		postArrayList = new ArrayList<HashMap<String, ArrayList<String []>>>();
-		postAsyncTask postasynctask = new postAsyncTask();
-		postasynctask.execute(url);
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}
 		pulltorefreshlistview = (PullToRefreshListView)findViewById(R.id.postlistview);
 		pulltorefreshlistview.setMode(Mode.BOTH);
 		pulltorefreshlistview.setOnRefreshListener(refreshlistener);
@@ -211,7 +173,8 @@ public class PostActivity extends Activity {
 		listview = pulltorefreshlistview.getRefreshableView();
 		postadapter = new postAdapter(PostActivity.this);
 		listview.setAdapter(postadapter);
-
+		postAsyncTask postasynctask = new postAsyncTask();
+		postasynctask.execute(url);
 
 	}
 	
@@ -464,7 +427,8 @@ public class PostActivity extends Activity {
     	}
 	}
 	public class postAsyncTask extends AsyncTask<String, Integer, String>{
-
+		private FudanBBSApplication currentapplication;
+		private HashMap<String, String> cookie;
 		private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
@@ -483,7 +447,16 @@ public class PostActivity extends Activity {
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			new Handler().postDelayed(new Runnable(){
 
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					postadapter.notifyDataSetChanged();
+					pulltorefreshlistview.onRefreshComplete();
+				}
+				
+			}, 0);		
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();				
 			}
@@ -657,17 +630,15 @@ public class PostActivity extends Activity {
     				}
     				nextpageurl = "http://bbs.fudan.edu.cn/bbs/tcon?new=1&bid="+bid+"&g="+gid+"&f="+lastfid+"&a=n";
     				Log.v(TAG, "doInBackground end, next page url =" +nextpageurl);
-    				flag = true;
+
 	//			}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.pageloadfailed), Toast.LENGTH_LONG).show();
 			}
-//			Log.v(TAG, postArrayList.toArray().toString());
-//			Log.v(TAG, nextpageurl);
-			String o = null;
-			return o;
+			return null;
+
 		}
 
 	}

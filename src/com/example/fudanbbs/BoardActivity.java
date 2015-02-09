@@ -56,12 +56,12 @@ public class BoardActivity extends Activity {
 	private String topicmodeURL, traditionalmodeURL, bid, boardname;
 	private ArrayList<HashMap<String, String>> topicdata;
 	private Bundle bundle;
-	private boolean flag;
 	private String nextpageurl;
 	private String lastpageurl;
 	private boolean lastpage = false;
 	private ListView listview;
 	private PullToRefreshListView pulltorefreshlistview;
+	private OnRefreshListener2<ListView> refreshlistener;
 	private TopicAdapter topicadapter;
 	private TopicListAsyncTask asynctask;
 	private ImageButton IBActionBack, IBActionRefresh;
@@ -92,20 +92,31 @@ public class BoardActivity extends Activity {
 			boardname = bundle.getString("boardname");
 			Log.v("TAG####################", traditionalmodeURL.toString());
 		}
-		flag = false;
 		topicdata = new ArrayList<HashMap<String, String>>();
-		asynctask = new TopicListAsyncTask();
-		asynctask.execute("first", traditionalmodeURL);
-		while(!flag){
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		pulltorefreshlistview = (PullToRefreshListView) findViewById(R.id.topiclistview);
+		pulltorefreshlistview.setMode(Mode.BOTH);
+		listview = (ListView)pulltorefreshlistview.getRefreshableView();
+		topicadapter = new TopicAdapter();
+
+		listview.setAdapter(topicadapter);
+		listview.setOnItemClickListener(new OnItemClickListener(){
+
+			@Override
+			public void onItemClick(AdapterView<?> parent,
+					View view, int position, long id) {
+				// TODO Auto-generated method stub			
+				TextView tv = (TextView) view.findViewById(R.id.faketext);
+        		Intent intent = new Intent();
+        		intent.setClassName(getApplicationContext(), "com.example.fudanbbs.PostActivity");
+        		Bundle bundle = new Bundle();
+        		bundle.putString("postURL", tv.getText().toString().trim());
+        		intent.putExtras(bundle);
+        		startActivity(intent);						
 			}
-			continue;
-		}
-		OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
+			
+		});
+
+		refreshlistener = new OnRefreshListener2<ListView>(){
 
 			@Override
 			public void onPullDownToRefresh(
@@ -114,29 +125,10 @@ public class BoardActivity extends Activity {
 				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
 						.getString(R.string.pull_to_refresh_refreshing_label));
 				pulltorefreshlistview.setRefreshing();
-				topicdata.clear();
-				flag = false;
 				asynctask = new TopicListAsyncTask();
 				asynctask.execute("first", topicmodeURL);
-				while(!flag){
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					continue;
-				}
-				new Handler().postDelayed(new Runnable(){
+				Log.v(TAG, "pull down called");
 
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						topicadapter.notifyDataSetChanged();
-						pulltorefreshlistview.onRefreshComplete();
-					}
-					
-				}, 0);
 			}
 
 			@Override
@@ -147,65 +139,20 @@ public class BoardActivity extends Activity {
 						.getString(R.string.pull_to_refresh_from_bottom_refreshing_label));
 				if(false == lastpage){
     				pulltorefreshlistview.setRefreshing();
-    				flag = false;
     				Log.v(TAG, nextpageurl);
     				asynctask = new TopicListAsyncTask();
     				asynctask.execute("next",nextpageurl);
-    				while(!flag){
-    					try {
-    						Thread.sleep(200);
-    					} catch (InterruptedException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    					}
-    					continue;
-    				}	
+
 				}else{
 				Toast.makeText(getApplicationContext(),getResources().getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
 			}
-				
-				new Handler().postDelayed(new Runnable(){
-				    
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-							topicadapter.notifyDataSetChanged();	
-							pulltorefreshlistview.onRefreshComplete();
-						
-					}				
-				}, 0);		
 			}
 			
 		};
-		pulltorefreshlistview = (PullToRefreshListView) findViewById(R.id.topiclistview);
-		pulltorefreshlistview.setMode(Mode.BOTH);
+		asynctask = new TopicListAsyncTask();
+		asynctask.execute("first", traditionalmodeURL);
 		pulltorefreshlistview.setOnRefreshListener(refreshlistener);
-		listview = (ListView)pulltorefreshlistview.getRefreshableView();
-		topicadapter = new TopicAdapter();
-		listview.setAdapter(topicadapter);
-		listview.setOnItemClickListener(new OnItemClickListener(){
-	    	private ProgressDialog progressdialog;
-			@Override
-			public void onItemClick(AdapterView<?> parent,
-					View view, int position, long id) {
-				// TODO Auto-generated method stub
-				progressdialog = new ProgressDialog(BoardActivity.this);
-				progressdialog.setMessage(getString(R.string.loading));
-				progressdialog.setCancelable(false);
-				progressdialog.setCanceledOnTouchOutside(false);
-				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-				progressdialog.show();						
-				TextView tv = (TextView) view.findViewById(R.id.faketext);
-        		Intent intent = new Intent();
-        		intent.setClassName(getApplicationContext(), "com.example.fudanbbs.PostActivity");
-        		Bundle bundle = new Bundle();
-        		bundle.putString("postURL", tv.getText().toString().trim());
-        		intent.putExtras(bundle);
-        		startActivity(intent);						
-        		progressdialog.dismiss();
-			}
-			
-		});
+
 	}	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -279,7 +226,6 @@ public class BoardActivity extends Activity {
 				holder.topictime.setText(map.get("time").substring(0, 10)+" "+map.get("time").substring(11, 19));
 				holder.topictitle.setText(map.get("title"));	
 				holder.postURL.setText("http://bbs.fudan.edu.cn/bbs/tcon?new=1&bid="+bid+"&f="+map.get("id"));
-
 			}
 
 			return convertView;
@@ -304,6 +250,7 @@ public class BoardActivity extends Activity {
 			currentapplication = (FudanBBSApplication)getApplication();
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();	
+
 			Log.v(TAG, "onPreExecute");
 		}
 
@@ -311,6 +258,16 @@ public class BoardActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+
+			new Handler().postDelayed(new Runnable(){
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					topicadapter.notifyDataSetChanged();
+					pulltorefreshlistview.onRefreshComplete();
+				}
+				
+			}, 0);
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
@@ -397,7 +354,6 @@ public class BoardActivity extends Activity {
 			}
 
 
-		flag = true;
 		Log.v(TAG, "doInBackground end");
 		return null;
     	}

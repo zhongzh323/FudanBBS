@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,8 @@ public class AllBoardFragment extends Fragment {
 	private TextView textview;
 	private ListView autohintlistview, allboardslistview;
 	private ProgressDialog progressdialog;
+	private SimpleAdapter allboardadapter;
+	private String TAG = "##################"+this.getClass().getName();
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			ViewGroup container, Bundle savedInstanceState) {
@@ -55,81 +58,66 @@ public class AllBoardFragment extends Fragment {
 		textview = (TextView) rootview.findViewById(R.id.lastusedhint);
 		autohintlistview = (ListView) rootview.findViewById(R.id.autohintlistView);
 		allboardslistview = (ListView) rootview.findViewById(R.id.allboardsListView);
-		generateView();
-		return rootview;
-	}
-
-	public void generateView(){
 		progressdialog = new ProgressDialog(getActivity());
 		progressdialog.setMessage(getString(R.string.loading));
 		progressdialog.setCancelable(false);
 		progressdialog.setCanceledOnTouchOutside(false);
 		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
-		generateLastUsedKeywordListView();
-		generateAutoHintListView();
-		generateAllBoardListView();
 
-		progressdialog.dismiss();
-	}
-	public void generateLastUsedKeywordListView(){
-		
-	}
-	public void generateAutoHintListView(){
-		
-	}
-	
-	public void generateAllBoardListView(){
 		AllBoardsAsyncTask task = new AllBoardsAsyncTask();
     	task.execute();
-    	try {
-			task.get();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-    	SimpleAdapter allboardadapter = new SimpleAdapter(rootview.getContext(), allboardlist, 
-    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
-    	allboardslistview.setAdapter(allboardadapter);
-    	allboardslistview.setOnItemClickListener(new OnItemClickListener(){
-
-			@Override
-			public void onItemClick(AdapterView<?> parent,
-					View view, int position, long id) {
-				// TODO Auto-generated method stub
-				TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
-				String boardtitlestring = boardtitle.getText().toString().trim();
-				TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
-				String boarddescstring = boardtitle.getText().toString().trim();
-				ProgressDialog progressdialog;
-				progressdialog = new ProgressDialog(getActivity());
-				progressdialog.setMessage(getString(R.string.loading));
-				progressdialog.setCancelable(false);
-				progressdialog.setCanceledOnTouchOutside(false);
-				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-				progressdialog.show();				
-				Intent intent = new Intent();
-				intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-				Bundle bundle = new Bundle();
-				String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
-				bundle.putString("boardURL", boardURL);
-				bundle.putString("boardname", boarddescstring.substring(1, boarddescstring.length()-1));
-				intent.putExtras(bundle);
-				startActivity(intent);
-				progressdialog.dismiss();
-			}});
+		return rootview;
 	}
 	public class AllBoardsAsyncTask extends AsyncTask{
-
+		
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			allboardlist = new ArrayList<HashMap<String, String>>();
+			progressdialog.show();	
+			if(null == allboardlist){
+				allboardlist = new ArrayList<HashMap<String, String>>();
+			}else{
+				allboardlist.clear();
+			}
+			Log.v(TAG, "onPreExecute");
 		}
+		
+		@Override
+		protected void onPostExecute(Object result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+	    	allboardadapter = new SimpleAdapter(rootview.getContext(), allboardlist, 
+	    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
+	    	allboardslistview.setAdapter(allboardadapter);
+	    	allboardslistview.setOnItemClickListener(new OnItemClickListener(){
+
+				@Override
+				public void onItemClick(AdapterView<?> parent,
+						View view, int position, long id) {
+					// TODO Auto-generated method stub
+					TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
+					String boardtitlestring = boardtitle.getText().toString().trim();
+					TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
+					String boarddescstring = boardtitle.getText().toString().trim();
+		
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+					Bundle bundle = new Bundle();
+					String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
+					bundle.putString("boardURL", boardURL);
+					bundle.putString("boardname", boarddescstring.substring(1, boarddescstring.length()-1));
+					intent.putExtras(bundle);
+					startActivity(intent);
+
+				}});
+			if(progressdialog.isShowing()){
+				progressdialog.dismiss();
+			}
+			Log.v(TAG, "onPostExecute");
+		}
+
+
 
 		@Override
 		protected Object doInBackground(Object... params) {

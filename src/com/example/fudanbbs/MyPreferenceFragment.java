@@ -27,12 +27,13 @@ import android.widget.TextView;
  *
  */
 public class MyPreferenceFragment extends Fragment {
-	private FudanBBSApplication currentapplication;
-	private HashMap<String, String> cookie;
+
 	private String TAG = "##################"+this.getClass().getName();
-	private boolean flag;
 	private getPreferenceAsyncTask asynctask;
 	private HashMap<String, String> map;
+	private TextView TVnickname, TVbirthday, TVgender, TVlogincount, TVonlinetime, TVpostcount, TVaccountsince,
+	TVlastlogintime, TVIPAddress;
+	private ProgressDialog progressdialog;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater,
@@ -41,30 +42,53 @@ public class MyPreferenceFragment extends Fragment {
 //		return super.onCreateView(inflater, container, savedInstanceState);
 		
 		View view  = inflater.inflate(R.layout.mypreference, null);
-		TextView TVnickname = (TextView) view.findViewById(R.id.nickname);
-		TextView TVbirthday = (TextView) view.findViewById(R.id.birthday);
-		TextView TVgender = (TextView) view.findViewById(R.id.gender);
-		TextView TVlogincount = (TextView) view.findViewById(R.id.logincount);
-		TextView TVonlinetime = (TextView) view.findViewById(R.id.onlinetime);
-		TextView TVpostcount = (TextView) view.findViewById(R.id.postcount);
-		TextView TVaccountsince = (TextView) view.findViewById(R.id.accountsince);
-		TextView TVlastlogintime = (TextView) view.findViewById(R.id.lastlogintime);
-		TextView TVIPAddress = (TextView) view.findViewById(R.id.IPAddress);
-		map = new HashMap<String, String>();
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
 		
-		flag = false;
+		TVnickname = (TextView) view.findViewById(R.id.nickname);
+		TVbirthday = (TextView) view.findViewById(R.id.birthday);
+		TVgender = (TextView) view.findViewById(R.id.gender);
+		TVlogincount = (TextView) view.findViewById(R.id.logincount);
+		TVonlinetime = (TextView) view.findViewById(R.id.onlinetime);
+		TVpostcount = (TextView) view.findViewById(R.id.postcount);
+		TVaccountsince = (TextView) view.findViewById(R.id.accountsince);
+		TVlastlogintime = (TextView) view.findViewById(R.id.lastlogintime);
+		TVIPAddress = (TextView) view.findViewById(R.id.IPAddress);
+
+		
 		new getPreferenceAsyncTask().execute();
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}		
-		
+
+		return view;
+	}
+
+
+public class getPreferenceAsyncTask extends AsyncTask{
+
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
+	@Override
+	protected void onPreExecute() {
+		// TODO Auto-generated method stub
+		super.onPreExecute();
+		Log.v(TAG, "onPreExecute");
+
+		progressdialog.show();		
+
+		if(null == map){
+			map = new HashMap<String, String>();
+		}else{
+			map.clear();			
+		}
+	}
+
+	@Override
+	protected void onPostExecute(Object result) {
+		// TODO Auto-generated method stub
+		super.onPostExecute(result);
+		Log.v(TAG, "onPostExecute");
 		TVnickname.setText(map.get("nick"));
 		TVbirthday.setText("19"+map.get("year")+"年"+map.get("month")+"月"+map.get("day")+"日");
 		TVgender.setText(map.get("gender").equals("M")?"男":"女");
@@ -76,33 +100,6 @@ public class MyPreferenceFragment extends Fragment {
 		TVaccountsince.setText(map.get("since").substring(0,10)+"  "+map.get("since").substring(11,19));
 		TVlastlogintime.setText(map.get("last").substring(0,10)+"  "+map.get("last").substring(11,19));
 		TVIPAddress.setText(map.get("host"));
-		return view;
-	}
-
-
-public class getPreferenceAsyncTask extends AsyncTask{
-	private ProgressDialog progressdialog;
-	@Override
-	protected void onPreExecute() {
-		// TODO Auto-generated method stub
-		super.onPreExecute();
-		Log.v(TAG, "onPreExecute");
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		progressdialog.show();		
-		if(null != map){
-			map.clear();
-		}
-	}
-
-	@Override
-	protected void onPostExecute(Object result) {
-		// TODO Auto-generated method stub
-		super.onPostExecute(result);
-		Log.v(TAG, "onPostExecute");
 		if(progressdialog.isShowing()){
 			progressdialog.dismiss();
 		}
@@ -139,7 +136,6 @@ public class getPreferenceAsyncTask extends AsyncTask{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}   
-		flag = true;
 		return null;
 	}
 	

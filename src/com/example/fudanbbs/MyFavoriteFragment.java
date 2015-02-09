@@ -34,68 +34,15 @@ import android.widget.AdapterView.OnItemClickListener;
  *
  */
 public class MyFavoriteFragment extends Fragment {
-	private View view;
+
 	private ListView listview;
 	private ArrayList<HashMap<String, String>> boardlist;
 	private FudanBBSApplication currentapplication;
 	private HashMap<String, String> cookie;
 	private boardlistAsyncTask asynctask;
 	private SimpleAdapter adapter;
-	private boolean flag;
 	private ProgressDialog progressdialog;
 	private String TAG = "##################"+this.getClass().getName();
-
-	@Override
-	public void onViewCreated(View view,
-			Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onViewCreated(view, savedInstanceState);
-
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
-		flag = false;
-		asynctask = new boardlistAsyncTask();
-		asynctask.execute();
-		while(!flag){try {
-    			Thread.sleep(200);
-    		} catch (InterruptedException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
-    		continue;
-		}
-    	adapter = new SimpleAdapter(view.getContext(), boardlist, 
-    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
-
-    	listview.setAdapter(adapter);
-		listview.setOnItemClickListener(new OnItemClickListener(){
-
-			@Override
-			public void onItemClick(AdapterView<?> parent,
-					View view, int position, long id) {
-				// TODO Auto-generated method stub
-				progressdialog.show();
-				TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
-				TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
-				String boardtitlestring = boardtitle.getText().toString().trim();
-				String boarddescstring = boarddesc.getText().toString().trim();
-				Intent intent = new Intent();
-				intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
-				Bundle bundle = new Bundle();
-				String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
-				bundle.putString("boardURL", boardURL);
-				bundle.putString("boardname", boarddescstring);
-				intent.putExtras(bundle);
-				startActivity(intent);
-				progressdialog.dismiss();
-			}});
-	
-		Log.v(TAG, "onViewCreated end");
-	}
-
 
 	@Override
 	public View onCreateView(LayoutInflater inflater,
@@ -104,32 +51,18 @@ public class MyFavoriteFragment extends Fragment {
 //		return super.onCreateView(inflater, container, savedInstanceState);
 
 
-		view =  inflater.inflate(R.layout.myfavoritefragement, null);
+		View view =  inflater.inflate(R.layout.myfavoritefragement, null);
 		listview = (ListView) view.findViewById(R.id.myfavoriteListView);
-		
-		Log.v(TAG, "onCreateView end");	
-		return view;
-	}
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		Log.v(TAG, "resumed");
-		flag = false;
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
+	
 		asynctask = new boardlistAsyncTask();
 		asynctask.execute();
-		while(!flag){
-			try {
-				Thread.sleep(200);
-				Log.v(TAG, "sleep for 200ms");
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue;
-		}	
-		adapter.notifyDataSetChanged();
-		listview.setAdapter(adapter);
+		Log.v(TAG, "onCreateView end");	
+		return view;
 	}
 	
 	
@@ -139,11 +72,11 @@ public class MyFavoriteFragment extends Fragment {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			progressdialog.show();	
-			if(null!= boardlist){
-				boardlist.clear();
-			}else{
+//			if(null == boardlist){
 				boardlist = new ArrayList<HashMap<String, String>>();
-			}
+//			}else{
+//				boardlist.clear();
+//			}
 			Log.v(TAG, "onPreExecute");
 		}
 
@@ -151,6 +84,29 @@ public class MyFavoriteFragment extends Fragment {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+	    	adapter = new SimpleAdapter(getActivity().getApplicationContext(), boardlist, 
+	    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
+	    	listview.removeAllViewsInLayout();
+	    	listview.setAdapter(adapter);
+			listview.setOnItemClickListener(new OnItemClickListener(){
+
+				@Override
+				public void onItemClick(AdapterView<?> parent,
+						View view, int position, long id) {
+					// TODO Auto-generated method stub
+					TextView boardtitle = (TextView) view.findViewById(R.id.boardtitle);
+					TextView boarddesc = (TextView) view.findViewById(R.id.boarddesc);
+					String boardtitlestring = boardtitle.getText().toString().trim();
+					String boarddescstring = boarddesc.getText().toString().trim();
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.BoardActivity");
+					Bundle bundle = new Bundle();
+					String boardURL = "http://bbs.fudan.edu.cn/bbs/doc?board="+boardtitlestring.substring(1, boardtitlestring.length()-1);
+					bundle.putString("boardURL", boardURL);
+					bundle.putString("boardname", boarddescstring);
+					intent.putExtras(bundle);
+					startActivity(intent);
+				}});	
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
@@ -183,7 +139,7 @@ public class MyFavoriteFragment extends Fragment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			flag = true;
+
 			return null;
 		}
 		

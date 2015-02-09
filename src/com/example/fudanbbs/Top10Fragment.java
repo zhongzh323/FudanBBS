@@ -34,8 +34,9 @@ public class Top10Fragment extends Fragment {
 	private FudanBBSApplication currentApplication;
 	private ArrayList<HashMap<String, String>> top10List;
 	private SimpleAdapter adapter;
-	private boolean flag;
-
+	private ListView top10ListView;
+	private ProgressDialog progressdialog;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -48,74 +49,35 @@ public class Top10Fragment extends Fragment {
 			ViewGroup container,
 			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
+		
 		View rootView = inflater.inflate(R.layout.top10fragment, container, false);
-        ListView top10ListView = (ListView)rootView.findViewById(R.id.top10listview);
-		flag = false;
-		top10List = new ArrayList<HashMap<String, String>>();		
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
+        top10ListView = (ListView)rootView.findViewById(R.id.top10listview);
+
     	top10AsycTask task = new top10AsycTask();
     	task.execute();
-		while(!flag){try {
-			Thread.sleep(200);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		continue;
-	}
-
-        adapter = new SimpleAdapter(rootView.getContext(), top10List, 
-        		R.layout.top10, 
-        		new String[]{"owner","board","title"}, 
-        		new int[]{R.id.top10owner, R.id.top10board, R.id.top10title});
-
-    	top10ListView.setAdapter(adapter);
-
-        OnItemClickListener listener = new OnItemClickListener(){
-	    	private ProgressDialog progressdialog;
-			@Override
-			public void onItemClick(
-					AdapterView<?> parent,
-					View view, int position, long id) {
-				// TODO Auto-generated method stub
-				Log.v("Listview", "position"+position);
-				progressdialog = new ProgressDialog(getActivity());
-				progressdialog.setMessage(getString(R.string.loading));
-				progressdialog.setCancelable(false);
-				progressdialog.setCanceledOnTouchOutside(false);
-				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-				progressdialog.show();	
-				String gid = top10List.get(position).get("gid");
-				String board = top10List.get(position).get("board");
-				String postURL = "http://bbs.fudan.edu.cn/bbs/tcon?new=1&board="+board+"&f="
-						+gid;
-				Intent intent = new Intent();
-				intent.setClassName(getActivity(), "com.example.fudanbbs.PostActivity");
-				Bundle bundle = new Bundle();
-				bundle.putString("postURL", postURL);
-				intent.putExtras(bundle);
-				startActivity(intent);
-        		progressdialog.dismiss();
-			}
-        	
-        };
-        top10ListView.setOnItemClickListener(listener);
 		return rootView;
 	}
 	
     public class top10AsycTask extends AsyncTask<String, Integer, String>{
 
-		private ProgressDialog progressdialog;
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			Log.v(TAG, "onPreExecute");
-			progressdialog = new ProgressDialog(getActivity());
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCancelable(false);
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-			progressdialog.show();					
+	
+			progressdialog.show();			
+			if(null == top10List){
+				top10List = new ArrayList<HashMap<String, String>>();		
+			}else{
+				top10List.clear();
+			}
 		}
 
 		@Override
@@ -123,6 +85,35 @@ public class Top10Fragment extends Fragment {
 			// TODO Auto-generated method stub
 //			super.onPostExecute(result);
 			Log.v(TAG, "onPostExecute");
+	        adapter = new SimpleAdapter(getActivity().getApplicationContext(), top10List, 
+	        		R.layout.top10, 
+	        		new String[]{"owner","board","title"}, 
+	        		new int[]{R.id.top10owner, R.id.top10board, R.id.top10title});
+
+	    	top10ListView.setAdapter(adapter);
+
+	        OnItemClickListener listener = new OnItemClickListener(){
+				@Override
+				public void onItemClick(
+						AdapterView<?> parent,
+						View view, int position, long id) {
+					// TODO Auto-generated method stub
+					Log.v("Listview", "position"+position);
+					String gid = top10List.get(position).get("gid");
+					String board = top10List.get(position).get("board");
+					String postURL = "http://bbs.fudan.edu.cn/bbs/tcon?new=1&board="+board+"&f="
+							+gid;
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.PostActivity");
+					Bundle bundle = new Bundle();
+					bundle.putString("postURL", postURL);
+					intent.putExtras(bundle);
+					startActivity(intent);
+				}
+	        	
+	        };
+	        top10ListView.setOnItemClickListener(listener);
+	        
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
@@ -155,7 +146,6 @@ public class Top10Fragment extends Fragment {
 				e.printStackTrace();
 			}
 			Log.v(TAG, "doInBackground end");
-			flag = true;
 			return null;
 		}
     }
