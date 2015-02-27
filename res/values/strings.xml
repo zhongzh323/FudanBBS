@@ -19,6 +19,7 @@
     <string name="rememberpassword">记住密码</string>
     <string name="autologin">自动登录</string>
     <string name="login">登 录</string>
+    <string name="gologin">立即登录</string>
     <string name="exit">退出</string>
     <string name="welcome">欢迎您~~</string>
     <string name="guestLogin">游客登录</string>    
@@ -26,7 +27,7 @@
     <string name="register">注 册</string>
     <string name="forgetPassword">忘记密码？</string>
     <string name="noAccount">没有账号？</string>    
-    <string name="loginSucceed">登录成功，转至主界面...</string>
+    <string name="loginSucceed">登录成功</string>
     <string name="accountError">用户名或密码错误，请重试...</string>
     <string name="loginFailed">登录失败</string>
     <string name="connectfailed">无法连接到服务器,请稍微重试</string>
@@ -35,10 +36,22 @@
     <string name="networkNotAvailable">呜呜，网络不可用，请检查您的网络设置...</string>
 	<string name="pageloadfailed">页面加载失败,请重试</string>
     <string name="logining">正在登录，请稍候...</string>
-    <string name="loading">正在为您玩命加载中...</string>  
+    <string name="loading">正在玩命加载中...</string>  
+    <string name="loadingboard">正在玩命加载版面内容...</string> 
+    <string name="loadingboardlist">正在玩命加载版面列表...</string>    
+    <string name="loadingpostlist">正在玩命加载帖子列表...</string>    
+    <string name="loadingpost">正在玩命加载帖子内容...</string>     
+    <string name="loadingmail">正在玩命加载邮件内容...</string> 
+    <string name="loadingmaillist">正在玩命加载邮件列表...</string>       
+    <string name="loadingtop10list">正在玩命加载今日十大...</string>      
+    <string name="postingreplymail">正在玩命发送邮件...</string>       
+    <string name="loadingpreference">正在玩命加载用户信息...</string>   
+
     <string name="lastitem">已到最后一页</string>  
     <string name="searchhint">输入版面关键字进行搜索</string>  
     <string name="notloginyet">您尚未登录</string>  
+    <string name="notloginmessage">您尚未登录，无法查看本版面</string>    
+    <string name="loginpromptmessage">需要登录才能查看本版面，确认登录吗？</string>  
     <string name="reply">回      复</string>  
     <string name="send">发      送</string>  
     <string name="receiver">收件人</string>  

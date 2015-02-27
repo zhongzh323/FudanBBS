@@ -73,6 +73,8 @@ public class PostActivity extends Activity {
 
 	private final String TAG = "#########PostActivity###########";
 	private ArrayList<HashMap<String, ArrayList<String []>>> postArrayList;
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
 	private postAdapter postadapter;
 	private ListView listview;
 	private OnRefreshListener2<ListView> refreshlistener;
@@ -108,7 +110,7 @@ public class PostActivity extends Activity {
 		lastfid = "";
 		Log.v(TAG, url);
 		setContentView(R.layout.postlist);	
-	
+		currentapplication = (FudanBBSApplication)getApplication();
 		refreshlistener = new OnRefreshListener2<ListView>(){
 			
 			@Override
@@ -427,18 +429,21 @@ public class PostActivity extends Activity {
     	}
 	}
 	public class postAsyncTask extends AsyncTask<String, Integer, String>{
-		private FudanBBSApplication currentapplication;
-		private HashMap<String, String> cookie;
+
 		private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			progressdialog = new ProgressDialog(PostActivity.this);
-			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setMessage(getString(R.string.loadingpost));
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
 			progressdialog.show();
+			cookie = new  HashMap<String, String>();
+			if(!currentapplication.isCurrentUserGuest()){
+				cookie = currentapplication.get_cookie();					
+			}
 			Log.v(TAG, "onPreExecute");
 			
 		}
@@ -478,14 +483,18 @@ public class PostActivity extends Activity {
 			String gid = null;
 			String lastfid = null;
 			String last = "0";
-			currentapplication = (FudanBBSApplication)getApplication();
-			cookie = new  HashMap<String, String>();
-			cookie = currentapplication.get_cookie();
+
+
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+//			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
 			try {
 				Log.v(TAG, "doInBackground start "+url);
-				Document doc = Jsoup.connect(url).timeout(15000).cookies(cookie).get();
+				Document doc;
+				if(cookie.get("utmpuserid")!=null){
+					doc = Jsoup.connect(url).timeout(15000).cookies(cookie).get();
+				}else{
+					doc = Jsoup.connect(url).timeout(15000).get();			
+				}
 				
 				//get  bid for generating the "next page " URL path
 				Elements elements = doc.getElementsByTag("bbstcon");

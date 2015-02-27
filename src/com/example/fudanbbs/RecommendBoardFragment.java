@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class RecommendBoardFragment extends Fragment {
+	private String TAG = "##################"+this.getClass().getName();
 	private ArrayList<HashMap<String, ArrayList<String[]>>> recommendboardlist;
 	private View rootView;
 	private int textsize;
@@ -52,7 +53,7 @@ public class RecommendBoardFragment extends Fragment {
 		rootView = inflater.inflate(R.layout.recommendboardfragment, container,false);		  	
 		listview = (ExpandableListView)rootView.findViewById(R.id.recommendBoardexpandableListView);
 		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setMessage(getString(R.string.loadingboardlist));
 		progressdialog.setCancelable(false);
 		progressdialog.setCanceledOnTouchOutside(false);
 		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
@@ -62,11 +63,6 @@ public class RecommendBoardFragment extends Fragment {
 		return rootView;
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onCreate(savedInstanceState);
-	}
 
 	public class expandableAdapter extends BaseExpandableListAdapter{    
 		ViewHolder holder;
@@ -217,14 +213,21 @@ public class RecommendBoardFragment extends Fragment {
 		@Override
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
-			currentapplication = (FudanBBSApplication) getActivity().getApplication();
-			cookie = new  HashMap<String, String>();
-			cookie = currentapplication.get_cookie();
-			String url = "http://bbs.fudan.edu.cn/bbs/sec";
 			Log.v("RecommendBoardFragement", "doInBackground");
-			Log.v("RecommendBoardFragementcoolie", cookie.get("utmpuserid"));
+			currentapplication = (FudanBBSApplication) getActivity().getApplication();
+			String url = "http://bbs.fudan.edu.cn/bbs/sec";
+			Document doc;
 			try {
-				Document doc = Jsoup.connect(url).cookies(cookie).get();
+				if(currentapplication.isCurrentUserGuest()){
+					Log.v(TAG, "is guest");
+					doc = Jsoup.connect(url).get();
+				}else{
+					cookie = new  HashMap<String, String>();
+					cookie = currentapplication.get_cookie();
+					Log.v("RecommendBoardFragementcoolie", cookie.get("utmpuserid"));
+					doc = Jsoup.connect(url).cookies(cookie).get();					
+				}
+
 				Elements sections = doc.getElementsByTag("sec");
 				for(Element section: sections){
 					HashMap<String, ArrayList<String[]>> map = new HashMap<String, ArrayList<String[]>>();

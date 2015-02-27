@@ -52,7 +52,7 @@ public class Top10Fragment extends Fragment {
 		
 		View rootView = inflater.inflate(R.layout.top10fragment, container, false);
 		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setMessage(getString(R.string.loadingtop10list));
 		progressdialog.setCancelable(false);
 		progressdialog.setCanceledOnTouchOutside(false);
 		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	

@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +38,10 @@ import android.widget.Toast;
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
 public class NavigationDrawerFragment extends Fragment {
-    private FudanBBSApplication currentApplication;
+
+	private DrawerAdapter adapter;
+
+	private FudanBBSApplication currentApplication;
     /**
      * Remember the position of the selected item.
      */
@@ -103,8 +107,7 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
 
-        
-        mDrawerListView.setAdapter(new DrawerAdapter(getActionBar().getThemedContext(), mCurrentSelectedPosition, mCurrentSelectedPosition,   
+        adapter = new DrawerAdapter(getActionBar().getThemedContext(), mCurrentSelectedPosition, mCurrentSelectedPosition,   
         		new String[]{
                         getString(R.string.top10board),
                         getString(R.string.recommendboard),
@@ -112,12 +115,27 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.allboard),
                         getString(R.string.mymail),      
                         getString(R.string.mypreference),                  
-                }));
+                });
+        mDrawerListView.setAdapter(adapter);
 
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
 
+    @Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		new Handler().postDelayed(new Runnable(){
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				adapter.notifyDataSetChanged();
+			}
+			
+		}, 0);
+	}
+    
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
     }
@@ -313,9 +331,7 @@ public class NavigationDrawerFragment extends Fragment {
 				textview.setText(R.string.notloginyet);
 			}else{
 				textview.setText(currentApplication.getCurrentUsername());
-			}
-			
-
+			}		
 			
 	        LinearLayout layout1 = (LinearLayout) convertView.findViewById(R.id.layout1);
 	        LinearLayout layout2 = (LinearLayout) convertView.findViewById(R.id.layout2);
@@ -323,8 +339,7 @@ public class NavigationDrawerFragment extends Fragment {
 	        LinearLayout layout4 = (LinearLayout) convertView.findViewById(R.id.layout4);
 	        LinearLayout layout5 = (LinearLayout) convertView.findViewById(R.id.layout5);
 	        LinearLayout layout6 = (LinearLayout) convertView.findViewById(R.id.layout6);
-	        
-	        
+   
 	        LinearLayout layout;
 			MainActivity ma = (MainActivity) getActivity();
 			switch(ma.currentposition){

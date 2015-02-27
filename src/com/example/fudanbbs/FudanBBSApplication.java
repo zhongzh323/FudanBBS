@@ -20,8 +20,9 @@ import android.widget.Toast;
  *
  */
 public class FudanBBSApplication extends Application {
+
 	// test
-	final String helloworld = "whatsapp";
+	final String helloworld = "fudanbbs";
 	private String TAG = "##################"+this.getClass().getName();
 	
 	// global configuration 
@@ -33,7 +34,7 @@ public class FudanBBSApplication extends Application {
 	private HashMap<String, String> account;
 	private boolean rememberPassword, autoLogin;
 
-	boolean isCurrentUserGuest;
+	private boolean isCurrentUserGuest = true;
 	private String currentusername;
 	private HashMap<String, String> cookie;
 	private boolean flag;
@@ -69,18 +70,18 @@ public class FudanBBSApplication extends Application {
 	private String serverAddress;
 	private boolean upload2Server;
 	
-	// check if the current user is guest
 
+	
+	
+	
+	// check if the current user is guest
 	public boolean isCurrentUserGuest(){
 		return isCurrentUserGuest;
 	}
-	public void setCurrentUserGuest(){
-		isCurrentUserGuest = true;
+	public void setCurrentUserGuest(boolean isGuest){
+		isCurrentUserGuest = isGuest;
 	}
-	public void setCurrentUserNotGuest(){
-		isCurrentUserGuest = false;
-	}
-	
+
 	public void setCurrentUsername(String aUsername){
 		this.currentusername = aUsername;
 	}

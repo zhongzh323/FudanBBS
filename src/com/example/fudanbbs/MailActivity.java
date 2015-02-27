@@ -152,7 +152,7 @@ public class MailActivity extends Activity {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			progressdialog = new ProgressDialog(MailActivity.this);
-			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setMessage(getString(R.string.loadingmail));
 			progressdialog.setCancelable(false);
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
@@ -258,7 +258,7 @@ public class MailActivity extends Activity {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			progressdialog = new ProgressDialog(MailActivity.this);
-			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setMessage(getString(R.string.postingreplymail));
 			progressdialog.setCancelable(false);
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		

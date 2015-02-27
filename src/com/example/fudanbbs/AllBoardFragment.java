@@ -59,7 +59,7 @@ public class AllBoardFragment extends Fragment {
 		autohintlistview = (ListView) rootview.findViewById(R.id.autohintlistView);
 		allboardslistview = (ListView) rootview.findViewById(R.id.allboardsListView);
 		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
+		progressdialog.setMessage(getString(R.string.loadingboardlist));
 		progressdialog.setCancelable(false);
 		progressdialog.setCanceledOnTouchOutside(false);
 		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		

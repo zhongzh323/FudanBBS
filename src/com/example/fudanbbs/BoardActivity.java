@@ -55,6 +55,8 @@ public class BoardActivity extends Activity {
 	private String TAG = "##################"+this.getClass().getName();
 	private String topicmodeURL, traditionalmodeURL, bid, boardname;
 	private ArrayList<HashMap<String, String>> topicdata;
+	private HashMap<String, String> cookie;
+	private FudanBBSApplication currentapplication;
 	private Bundle bundle;
 	private String nextpageurl;
 	private String lastpageurl;
@@ -83,6 +85,8 @@ public class BoardActivity extends Activity {
 		actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
 		actionbar.setDisplayHomeAsUpEnabled(true);
 		actionbar.setIcon(new ColorDrawable(color.transparent));
+		
+		currentapplication = (FudanBBSApplication)getApplication();	
 		
 		traditionalmodeURL = new String();
 		topicmodeURL = new String();
@@ -182,6 +186,7 @@ public class BoardActivity extends Activity {
 		}
 		return true;
 	}	
+	
 	public class TopicAdapter extends BaseAdapter{
 		ViewHolder holder;
 		LayoutInflater inflater;
@@ -235,21 +240,22 @@ public class BoardActivity extends Activity {
 	
     public class TopicListAsyncTask extends AsyncTask<String, Object, Object>{
     	private ProgressDialog progressdialog;
-    	private HashMap<String, String> cookie;
-    	private FudanBBSApplication currentapplication;
+
     	@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
 			progressdialog = new ProgressDialog(BoardActivity.this);
-			progressdialog.setMessage(getString(R.string.loading));
+			progressdialog.setMessage(getString(R.string.loadingpostlist));
 			progressdialog.setCancelable(false);
 			progressdialog.setCanceledOnTouchOutside(false);
 			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-			progressdialog.show();		
-			currentapplication = (FudanBBSApplication)getApplication();
+			progressdialog.show();	
 			cookie = new  HashMap<String, String>();
-			cookie = currentapplication.get_cookie();	
+			if(!currentapplication.isCurrentUserGuest()){
+				cookie = currentapplication.get_cookie();					
+			}
+
 
 			Log.v(TAG, "onPreExecute");
 		}

@@ -11,14 +11,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.example.fudanbbs.MyFavoriteFragment.boardlistAsyncTask;
+
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -29,52 +34,88 @@ import android.widget.TextView;
 public class MyPreferenceFragment extends Fragment {
 
 	private String TAG = "##################"+this.getClass().getName();
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
 	private getPreferenceAsyncTask asynctask;
 	private HashMap<String, String> map;
 	private TextView TVnickname, TVbirthday, TVgender, TVlogincount, TVonlinetime, TVpostcount, TVaccountsince,
 	TVlastlogintime, TVIPAddress;
 	private ProgressDialog progressdialog;
-	
+	private View view, errorloginview;
+	private LinearLayout layout, mypreferencelayout;	
 	@Override
 	public View onCreateView(LayoutInflater inflater,
 			ViewGroup container, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container, savedInstanceState);
 		
-		View view  = inflater.inflate(R.layout.mypreference, null);
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		
-		TVnickname = (TextView) view.findViewById(R.id.nickname);
-		TVbirthday = (TextView) view.findViewById(R.id.birthday);
-		TVgender = (TextView) view.findViewById(R.id.gender);
-		TVlogincount = (TextView) view.findViewById(R.id.logincount);
-		TVonlinetime = (TextView) view.findViewById(R.id.onlinetime);
-		TVpostcount = (TextView) view.findViewById(R.id.postcount);
-		TVaccountsince = (TextView) view.findViewById(R.id.accountsince);
-		TVlastlogintime = (TextView) view.findViewById(R.id.lastlogintime);
-		TVIPAddress = (TextView) view.findViewById(R.id.IPAddress);
+		layout  = (LinearLayout) inflater.inflate(R.layout.mypreference, null);
+		currentapplication = (FudanBBSApplication) getActivity().getApplication();
+		mypreferencelayout = (LinearLayout) layout.findViewById(R.id.mypreferencelayout);
+		errorloginview = inflater.inflate(R.layout.notlogin4mypreference, null);
+		layout.addView(errorloginview);
+		TVnickname = (TextView) layout.findViewById(R.id.nickname);
+		TVbirthday = (TextView) layout.findViewById(R.id.birthday);
+		TVgender = (TextView) layout.findViewById(R.id.gender);
+		TVlogincount = (TextView) layout.findViewById(R.id.logincount);
+		TVonlinetime = (TextView) layout.findViewById(R.id.onlinetime);
+		TVpostcount = (TextView) layout.findViewById(R.id.postcount);
+		TVaccountsince = (TextView) layout.findViewById(R.id.accountsince);
+		TVlastlogintime = (TextView) layout.findViewById(R.id.lastlogintime);
+		TVIPAddress = (TextView) layout.findViewById(R.id.IPAddress);
+		if(!currentapplication.isCurrentUserGuest()){
+			errorloginview.setVisibility(View.GONE);
+    		asynctask = new getPreferenceAsyncTask();
+    		asynctask.execute();
 
-		
-		new getPreferenceAsyncTask().execute();
+		}else{
+			Log.v(TAG, "current user is guest");
+//			mypreferencelayout.setVisibility(View.GONE);
+			Button BtnGologin = (Button) errorloginview.findViewById(R.id.gologin);
+			BtnGologin.setOnClickListener(new OnClickListener(){
 
-		return view;
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.LoginActivity");
+					startActivityForResult(intent, 0);
+				}
+				
+			});
+
+		}		
+
+		return layout;
 	}
-
+	
+	@Override
+	public void onActivityResult(int requestCode,
+			int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if(data.getBooleanExtra("result", false)){
+			errorloginview.setVisibility(View.GONE);
+    		asynctask = new getPreferenceAsyncTask();
+    		asynctask.execute();			
+		}else{
+			
+		}
+	}
 
 public class getPreferenceAsyncTask extends AsyncTask{
 
-	private FudanBBSApplication currentapplication;
-	private HashMap<String, String> cookie;
+
 	@Override
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
 		Log.v(TAG, "onPreExecute");
-
+		progressdialog = new ProgressDialog(getActivity());
+		progressdialog.setMessage(getString(R.string.loadingpreference));
+		progressdialog.setCancelable(false);
+		progressdialog.setCanceledOnTouchOutside(false);
+		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
 		progressdialog.show();		
 
 		if(null == map){
@@ -108,7 +149,7 @@ public class getPreferenceAsyncTask extends AsyncTask{
 	@Override
 	protected Object doInBackground(Object... params) {
 		// TODO Auto-generated method stub
-		currentapplication = (FudanBBSApplication) getActivity().getApplication();
+
 		cookie = new  HashMap<String, String>();
 		cookie = currentapplication.get_cookie();
 		Log.v(TAG, "doInBackground");

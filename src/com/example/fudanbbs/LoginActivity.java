@@ -37,12 +37,7 @@ import android.widget.Toast;
  *
  */
 public class LoginActivity extends Activity {
-    @Override
-	public void onBackPressed() {
-		// TODO Auto-generated method stub
-//		super.onBackPressed();
-		moveTaskToBack(false);  
-	}
+
 
 	private String username, password;
     private boolean rememberPassword, autoLogin;
@@ -54,6 +49,17 @@ public class LoginActivity extends Activity {
     private FudanBBSApplication currentApplication;
     private AlertDialog loginingDialog;
 
+    @Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+//		super.onBackPressed();
+		moveTaskToBack(false);  
+		Intent intent = new Intent();
+		intent.putExtra("result", false);
+		LoginActivity.this.setResult(0, intent);
+		finish();
+	}
+    
     OnClickListener listener = new OnClickListener(){
     
     	@Override
@@ -61,13 +67,22 @@ public class LoginActivity extends Activity {
     		// TODO Auto-generated method stub
     		switch(v.getId()){
     		case R.id.login:
-    			currentApplication.setCurrentUserNotGuest();
-    			login();
+    			username = ETusername.getText().toString().trim();
+    			password = ETpassword.getText().toString().trim();
+
+    			loginingDialog.setCanceledOnTouchOutside(true);    			
+    			if(username.isEmpty() || password.isEmpty()){
+    				loginingDialog.setMessage(getResources().getString(R.string.accountNotNull));	
+    				loginingDialog.show();
+    			}else if(!currentApplication.checkNetwork()){
+    				loginingDialog.setMessage(getResources().getString(R.string.networkNotAvailable));	
+    				loginingDialog.show();
+    			}else{			
+    				loginTask logintask = new loginTask();
+    				logintask.execute();
+    			}    	
     			break;
-    		case R.id.guestLogin:
-    			currentApplication.setCurrentUserGuest();
-    			guestLogin();
-    			break;
+
     		case R.id.register:
     			callBrowser2page("http://bbs.fudan.edu.cn/reg.htm");
     			break;
@@ -76,36 +91,15 @@ public class LoginActivity extends Activity {
 	
     };
     
-    public void guestLogin(){
-		guestLoginTask logintask = new guestLoginTask();
-		logintask.execute();    	
-    }
-    public void login(){
-//		currentApplication.shortToast("login clicked!");
-		username = ETusername.getText().toString().trim();
-		password = ETpassword.getText().toString().trim();
 
-		loginingDialog.setCanceledOnTouchOutside(true);    			
-		if(username.isEmpty() || password.isEmpty()){
-			loginingDialog.setMessage(getResources().getString(R.string.accountNotNull));	
-			loginingDialog.show();
-		}else if(!currentApplication.checkNetwork()){
-			loginingDialog.setMessage(getResources().getString(R.string.networkNotAvailable));	
-			loginingDialog.show();
-		}else{			
 
-			loginTask logintask = new loginTask();
-			logintask.execute();
-
-		}    	
-    }
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+//		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		setContentView(R.layout.login);
-		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.logintitlebar);
+//		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.logintitlebar);
 		loginingDialog = new AlertDialog.Builder(LoginActivity.this).create();
 		ETusername = (EditText)findViewById(R.id.username);
 		ETpassword = (EditText)findViewById(R.id.password);
@@ -134,10 +128,6 @@ public class LoginActivity extends Activity {
 			ETpassword.setText(password);
 		}
 		
-		if(true == autoLogin){
-			login();
-		}
-
 		
 		CBrememberPassword = (CheckBox)findViewById(R.id.checkRememberPassword);
 		CBautoLogin = (CheckBox)findViewById(R.id.checkAutoLogin);
@@ -152,7 +142,7 @@ public class LoginActivity extends Activity {
 //		Toast.makeText(getApplicationContext(), ((FudanBBSApplication)getApplication()).LANDSCAPE, Toast.LENGTH_LONG).show();
 	}
 	
-
+    
 	// call system internet browser to access web page
 	public void callBrowser2page(String aWebpage){
 		Intent callBrowser = new Intent(Intent.ACTION_VIEW);
@@ -161,81 +151,6 @@ public class LoginActivity extends Activity {
 		
 	}
 	
-	public void startMainActivity(){
-		Intent intent = new Intent();
-		intent.setClass(getApplicationContext(), MainActivity.class);
-		startActivity(intent);	
-
-	}
-	
-	public class guestLoginTask extends AsyncTask<Object, Object, Object>{
-		private int httpResponseCode;
-	    private ProgressDialog progressdialog;
-		@Override
-		protected void onPreExecute() {
-			// TODO Auto-generated method stub
-			super.onPreExecute();
-			progressdialog = new ProgressDialog(LoginActivity.this);
-			progressdialog.setMessage(getString(R.string.loading));
-			progressdialog.setCancelable(false);
-			progressdialog.setCanceledOnTouchOutside(false);
-			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-			progressdialog.show();	
-
-		}
-		@Override
-		protected void onPostExecute(Object result) {
-			// TODO Auto-generated method stub
-			super.onPostExecute(result);
-			if(progressdialog.isShowing()){
-				progressdialog.dismiss();
-			}
-			if(httpResponseCode == 9999){
-				loginingDialog.setMessage(getResources().getString(R.string.connectfailed));
-				loginingDialog.show();				
-			}else{
-				startMainActivity();
-				finish();
-			}
-			
-		}
-
-		@Override
-		protected Object doInBackground(Object... params) {
-			// TODO Auto-generated method stub
-			URL url;
-			HttpURLConnection connection = null;
-				try {
-					url = new URL("http://bbs.fudan.edu.cn");
-					connection = (HttpURLConnection)url.openConnection();
-					connection.setDoInput(true);
-					connection.setDoOutput(true);
-					connection.setRequestMethod("POST");
-					connection.setConnectTimeout(10000);
-					connection.setInstanceFollowRedirects(false);
-					connection.connect();
-					httpResponseCode = connection.getResponseCode();
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch(SocketTimeoutException e){
-					httpResponseCode = 9999;
-				}
-					catch(Exception e){
-						e.printStackTrace();
-				}
-				finally{
-					if(null != connection){
-						connection.disconnect();
-					}
-				}
-
-
-			return null;
-		}
-		
-	}
 
 	// login page Async task class
 	public class loginTask extends AsyncTask<Object, Object, Object>{
@@ -268,15 +183,20 @@ public class LoginActivity extends Activity {
 			switch(httpResponseCode){
     			case 200:
 					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
-					startMainActivity();
+
 					if (CBrememberPassword.isChecked()){
 						accountInfo.put("rememberpassword", "true");    						
 					}
 					if(CBautoLogin.isChecked()){
 						accountInfo.put("autologin", "true");
 					}
+					currentApplication.setCurrentUserGuest(false);
 					currentApplication.setCurrentUsername(username);
 					currentApplication.saveAccountInfo(accountInfo);
+					Toast.makeText(getApplicationContext(), getString(R.string.loginSucceed), Toast.LENGTH_LONG).show();
+					Intent intent = new Intent();
+					intent.putExtra("result", true);
+					LoginActivity.this.setResult(0, intent);
 					finish();					
     				break;
     			case 9999:		
@@ -311,10 +231,6 @@ public class LoginActivity extends Activity {
 				connection.setInstanceFollowRedirects(false);
 				connection.connect();
 				
-/*				OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
-				osw.write("id="+username+"&pw="+password);
-				osw.flush();
-				osw.close();*/
 				httpResponseCode = connection.getResponseCode();
 				if(null != connection){
 					connection.disconnect();

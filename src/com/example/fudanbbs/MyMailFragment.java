@@ -13,6 +13,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.example.fudanbbs.BoardActivity.TopicListAsyncTask;
+import com.example.fudanbbs.MyFavoriteFragment.boardlistAsyncTask;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnLastItemVisibleListener;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
@@ -28,18 +30,23 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author Joseph.Zhong
@@ -49,12 +56,15 @@ public class MyMailFragment extends Fragment {
 
 	private String TAG = "##################"+this.getClass().getName();
 	private ArrayList<HashMap<String, String>> maillist;
-
+	private FudanBBSApplication currentapplication;
+	private HashMap<String, String> cookie;
 	private ListView listview;
 	private PullToRefreshListView pulltorefreshlistview;
 	private MyMailAdapter adapter;
 	private MyMailAsyncTask asynctask;
 	private ProgressDialog progressdialog;
+	private View view, errorloginview;
+	private LinearLayout layout;
 	static class ViewHolder{
 		TextView TVmailfrom;
 		TextView TVmaildate;
@@ -69,36 +79,110 @@ public class MyMailFragment extends Fragment {
 			ViewGroup container, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container,	savedInstanceState);
-		View view = inflater.inflate(R.layout.mymailfragment, null);
-		pulltorefreshlistview = (PullToRefreshListView)view.findViewById(R.id.maillistview);
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
+		currentapplication = (FudanBBSApplication) getActivity().getApplication();
+		layout = (LinearLayout) inflater.inflate(R.layout.mymailfragment, null);
+		pulltorefreshlistview = (PullToRefreshListView)layout.findViewById(R.id.maillistview);
+		pulltorefreshlistview.setMode(Mode.BOTH);
 
-		asynctask = new MyMailAsyncTask();
-		asynctask.execute();
+		adapter = new MyMailAdapter(getActivity());
+		maillist = new ArrayList<HashMap<String, String>>();
+		listview = pulltorefreshlistview.getRefreshableView();		
+		listview.setAdapter(adapter);
+		listview.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> parent,
+					View view, int position, long id) {
+				// TODO Auto-generated method stub
+				TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
+    			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
+    			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
+    			TextView TVmailfrom = (TextView) view.findViewById(R.id.mailfrom);	
+				String name = TVnamefake.getText().toString().trim();
+				String number= TVmailnumberfake.getText().toString().trim();
+				String mailcontent = TVmailcontent.getText().toString().trim();
+				String mailfrom = TVmailfrom.getText().toString().trim();
+				String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name+"&n="+number;
+				Intent intent = new Intent();
+				intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
+				intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
+				startActivity(intent);
 
-		return view;
+			}
+			
+		});
+		OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
+
+			@Override
+			public void onPullDownToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				// TODO Auto-generated method stub
+//				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
+//						.getString(R.string.pull_to_refresh_refreshing_label));
+//				pulltorefreshlistview.setRefreshing();
+//				asynctask = new MyMailAsyncTask();
+//				asynctask.execute("first", topicmodeURL);
+				Log.v(TAG, "pull down called");				
+			}
+
+			@Override
+			public void onPullUpToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				// TODO Auto-generated method stub
+//				pulltorefreshlistview.getLoadingLayoutProxy().setRefreshingLabel(getResources()
+//						.getString(R.string.pull_to_refresh_from_bottom_refreshing_label));
+//				if(false == lastpage){
+//    				pulltorefreshlistview.setRefreshing();
+//    				Log.v(TAG, nextpageurl);
+//    				asynctask = new MyMailAsyncTask();
+//    				asynctask.execute("next",nextpageurl);
+//
+//				}else{
+//				Toast.makeText(getActivity(), getString(R.string.lastitem),Toast.LENGTH_SHORT).show();							
+//				}				
+			}			
+		};
+
+		pulltorefreshlistview.setOnRefreshListener(refreshlistener);
+		errorloginview = inflater.inflate(R.layout.notloginmessage, null);
+		layout.addView(errorloginview);
+		if(!currentapplication.isCurrentUserGuest()){
+			errorloginview.setVisibility(View.GONE);
+    		asynctask = new MyMailAsyncTask();
+    		asynctask.execute();
+
+		}else{
+			pulltorefreshlistview.setVisibility(View.GONE);
+			Button BtnGologin = (Button) errorloginview.findViewById(R.id.gologin);
+			BtnGologin.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.LoginActivity");
+					startActivityForResult(intent, 0);
+				}
+				
+			});
+
+		}
+		return layout;
 	}
 	
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		Log.v(TAG, "resumed");
 
-		asynctask = new MyMailAsyncTask();
-		asynctask.execute();
-		
-	}
 	@Override
-	public void onPause() {
+	public void onActivityResult(int requestCode,
+			int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		super.onPause();
-		Log.v(TAG, "paused");
+		super.onActivityResult(requestCode, resultCode, data);
+		if(data.getBooleanExtra("result", false)){
+			Log.v(TAG, "on activity result");
+			pulltorefreshlistview.setVisibility(View.VISIBLE);
+			errorloginview.setVisibility(View.GONE);
+    		asynctask = new MyMailAsyncTask();
+    		asynctask.execute();			
+		}
 	}
-		
 	
 	public class MyMailAdapter extends BaseAdapter{
 
@@ -202,19 +286,17 @@ public class MyMailFragment extends Fragment {
 		
 	}
 	public class MyMailAsyncTask extends AsyncTask{
-		private FudanBBSApplication currentapplication;
-		private HashMap<String, String> cookie;
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-
+			progressdialog = new ProgressDialog(getActivity());
+			progressdialog.setMessage(getString(R.string.loadingmaillist));
+			progressdialog.setCanceledOnTouchOutside(false);
+			progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);
 			progressdialog.show();
-			if(null!= maillist){
-				maillist.clear();
-			}else{
-				maillist = new ArrayList<HashMap<String, String>>();
-			}
+
 			Log.v(TAG, "onPreExecute");
 		}
 
@@ -222,53 +304,15 @@ public class MyMailFragment extends Fragment {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			
-
-			pulltorefreshlistview.setMode(Mode.BOTH);
-			OnRefreshListener2<ListView> refreshlistener = new OnRefreshListener2<ListView>(){
-
+			new Handler().postDelayed(new Runnable(){
 				@Override
-				public void onPullDownToRefresh(
-						PullToRefreshBase<ListView> refreshView) {
+				public void run() {
 					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void onPullUpToRefresh(
-						PullToRefreshBase<ListView> refreshView) {
-					// TODO Auto-generated method stub
-					
-				}			
-			};
-
-			pulltorefreshlistview.setOnRefreshListener(refreshlistener);
-			adapter = new MyMailAdapter(getActivity());
-
-			listview = pulltorefreshlistview.getRefreshableView();		
-			listview.setAdapter(adapter);
-			listview.setOnItemClickListener(new OnItemClickListener(){
-				@Override
-				public void onItemClick(AdapterView<?> parent,
-						View view, int position, long id) {
-					// TODO Auto-generated method stub
-					TextView TVnamefake = (TextView) view.findViewById(R.id.mailnamefake);
-	    			TextView TVmailnumberfake = (TextView) view.findViewById(R.id.mailnumberfake);	
-	    			TextView TVmailcontent = (TextView) view.findViewById(R.id.mailcontent);	
-	    			TextView TVmailfrom = (TextView) view.findViewById(R.id.mailfrom);	
-					String name = TVnamefake.getText().toString().trim();
-					String number= TVmailnumberfake.getText().toString().trim();
-					String mailcontent = TVmailcontent.getText().toString().trim();
-					String mailfrom = TVmailfrom.getText().toString().trim();
-					String mailcontentURL = "http://bbs.fudan.edu.cn/bbs/mailcon?f="+name+"&n="+number;
-					Intent intent = new Intent();
-					intent.setClassName(getActivity(), "com.example.fudanbbs.MailActivity");
-					intent.putExtra("URL", new String[]{mailcontentURL, number, mailcontent, mailfrom});
-					startActivity(intent);
-
+					adapter.notifyDataSetChanged();
+					pulltorefreshlistview.onRefreshComplete();
 				}
 				
-			});
+			}, 0);
 			
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();				

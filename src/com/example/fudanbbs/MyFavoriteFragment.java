@@ -13,20 +13,26 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 /**
@@ -42,6 +48,8 @@ public class MyFavoriteFragment extends Fragment {
 	private boardlistAsyncTask asynctask;
 	private SimpleAdapter adapter;
 	private ProgressDialog progressdialog;
+	private View view, errorloginview;
+	private LinearLayout layout;
 	private String TAG = "##################"+this.getClass().getName();
 
 	@Override
@@ -50,19 +58,46 @@ public class MyFavoriteFragment extends Fragment {
 		// TODO Auto-generated method stub
 //		return super.onCreateView(inflater, container, savedInstanceState);
 
+		currentapplication = (FudanBBSApplication) getActivity().getApplication();
+		
+		layout =  (LinearLayout) inflater.inflate(R.layout.myfavoritefragement, null);
+		listview = (ListView) layout.findViewById(R.id.myfavoriteListView);
+		errorloginview = inflater.inflate(R.layout.notloginmessage, null);
+		layout.addView(errorloginview);
+		if(!currentapplication.isCurrentUserGuest()){
+    		layout.removeViewInLayout(errorloginview);
+    		asynctask = new boardlistAsyncTask();
+    		asynctask.execute();
 
-		View view =  inflater.inflate(R.layout.myfavoritefragement, null);
-		listview = (ListView) view.findViewById(R.id.myfavoriteListView);
-		progressdialog = new ProgressDialog(getActivity());
-		progressdialog.setMessage(getString(R.string.loading));
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
+		}else{
+			Button BtnGologin = (Button) errorloginview.findViewById(R.id.gologin);
+			BtnGologin.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent();
+					intent.setClassName(getActivity(), "com.example.fudanbbs.LoginActivity");
+					startActivityForResult(intent, 0);
+				}
+				
+			});
+
+		}
+		return layout;
+	}
 	
-		asynctask = new boardlistAsyncTask();
-		asynctask.execute();
-		Log.v(TAG, "onCreateView end");	
-		return view;
+
+	@Override
+	public void onActivityResult(int requestCode,
+			int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if(data.getBooleanExtra("result", false)){
+			layout.removeViewInLayout(errorloginview);
+    		asynctask = new boardlistAsyncTask();
+    		asynctask.execute();			
+		}
 	}
 	
 	
@@ -71,6 +106,13 @@ public class MyFavoriteFragment extends Fragment {
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
+			if(null == progressdialog){
+				progressdialog = new ProgressDialog(getActivity());
+				progressdialog.setMessage(getString(R.string.loadingboardlist));
+				progressdialog.setCancelable(false);
+				progressdialog.setCanceledOnTouchOutside(false);
+				progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);	
+			}
 			progressdialog.show();	
 //			if(null == boardlist){
 				boardlist = new ArrayList<HashMap<String, String>>();
@@ -86,7 +128,6 @@ public class MyFavoriteFragment extends Fragment {
 			super.onPostExecute(result);
 	    	adapter = new SimpleAdapter(getActivity().getApplicationContext(), boardlist, 
 	    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
-	    	listview.removeAllViewsInLayout();
 	    	listview.setAdapter(adapter);
 			listview.setOnItemClickListener(new OnItemClickListener(){
 
@@ -117,7 +158,7 @@ public class MyFavoriteFragment extends Fragment {
 		protected Object doInBackground(Object... params) {
 			// TODO Auto-generated method stub
 
-			currentapplication = (FudanBBSApplication) getActivity().getApplication();
+
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");

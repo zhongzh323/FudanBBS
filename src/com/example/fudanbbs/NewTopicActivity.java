@@ -69,6 +69,8 @@ public class NewTopicActivity extends Activity {
 	private LinearLayout imagelayout;
 	private ProgressDialog progressdialog;
 	private AlertDialog.Builder builder;
+	private HashMap<String, String> cookie;
+	private FudanBBSApplication currentapplication;
 	private NewpostAsyncTask asynctask;
 	private int attachmentmaxsize;
 	private GetNewPostPageAsyncTask getnewpostasynctask;
@@ -77,71 +79,93 @@ public class NewTopicActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.newtopic);
-		
-		ActionBar actionbar = getActionBar();
-		actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
-		actionbar.setDisplayHomeAsUpEnabled(true);
-		actionbar.setIcon(new ColorDrawable(color.transparent));
-		actionbar.setTitle(getResources().getString(R.string.newposttitle));
-		
-		progressdialog = new ProgressDialog(this);
-		progressdialog.setCancelable(false);
-		progressdialog.setCanceledOnTouchOutside(false);
-		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
-		
-		builder = new AlertDialog.Builder(this);
-    	builder.setIcon(R.drawable.as1).setTitle(R.string.newpostfailed);	
-    	builder.setPositiveButton("OK", null);
-    	
-    	attachmenturlarraylist = new ArrayList<String>();
-    	
-		Bundle bundle = getIntent().getExtras();
-		bid = bundle.getString("bid");
-		boardname = bundle.getString("boardname");
-		TVBoardname = (TextView) findViewById(R.id.newtopicboardname);
-		TVBoardname.setText(boardname);
-		NewTopicTitle = (EditText) findViewById(R.id.newtopictitle);
-		ETEditText = (EditText) findViewById(R.id.newpostedittext);
-		imagelayout = (LinearLayout)findViewById(R.id.imagelayout);
-		ButtonUpload = (Button) findViewById(R.id.uploadattachmentbutton);
-		ButtonNewpost = (Button) findViewById(R.id.newpostbutton);
-		OnClickListener listener = new OnClickListener(){
 
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				switch(v.getId()){
-				
-				// to upload an attachment
-				case R.id.uploadattachmentbutton:
-    				Intent intent = new Intent();
-    				intent.setAction(Intent.ACTION_GET_CONTENT);
-    				intent.setType("image/*");
-    				Log.v(TAG, "startActivityForResult");
-    				startActivityForResult(intent, 1);
-    				break;
-    				
-    			// to post a new topic
-				case R.id.newpostbutton:
-					if(NewTopicTitle.getText().toString().trim().equals("")){
-		            	builder.setMessage(getResources().getString(R.string.titlenotnull));
-		            	builder.show();						
-					}else{
-    					asynctask = new NewpostAsyncTask();
-    					asynctask.execute();			
-    					break;
-    				}
+		currentapplication = (FudanBBSApplication)getApplication();
+		if(currentapplication.isCurrentUserGuest()){
+			setContentView(R.layout.notloginmessage);
+			Button BtnGologin = (Button) findViewById(R.id.gologin);
+			BtnGologin.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent intent = new Intent();
+					intent.setClassName(getApplicationContext(), "com.example.fudanbbs.LoginActivity");
+					startActivityForResult(intent, 1);
 				}
-			}
-			
-		};
-
-		ButtonUpload.setOnClickListener(listener);
-		ButtonNewpost.setOnClickListener(listener);
-		getnewpostasynctask = new GetNewPostPageAsyncTask();
-		getnewpostasynctask.execute();
+				
+			});
+		}else{
+			generateNewTopicView();
+		}
 	}
+
+		public void generateNewTopicView(){
+			setContentView(R.layout.newtopic);		
+    		ActionBar actionbar = getActionBar();
+    		actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+    		actionbar.setDisplayHomeAsUpEnabled(true);
+    		actionbar.setIcon(new ColorDrawable(color.transparent));
+    		actionbar.setTitle(getResources().getString(R.string.newposttitle));
+    		
+    		progressdialog = new ProgressDialog(this);
+    		progressdialog.setCancelable(false);
+    		progressdialog.setCanceledOnTouchOutside(false);
+    		progressdialog.setProgressStyle(progressdialog.STYLE_SPINNER);		
+    		
+    		builder = new AlertDialog.Builder(this);
+        	builder.setIcon(R.drawable.as1).setTitle(R.string.newpostfailed);	
+        	builder.setPositiveButton("OK", null);
+        	
+        	attachmenturlarraylist = new ArrayList<String>();
+        	
+    		Bundle bundle = getIntent().getExtras();
+    		bid = bundle.getString("bid");
+    		boardname = bundle.getString("boardname");
+    		TVBoardname = (TextView) findViewById(R.id.newtopicboardname);
+    		TVBoardname.setText(boardname);
+    		NewTopicTitle = (EditText) findViewById(R.id.newtopictitle);
+    		ETEditText = (EditText) findViewById(R.id.newpostedittext);
+    		imagelayout = (LinearLayout)findViewById(R.id.imagelayout);
+    		ButtonUpload = (Button) findViewById(R.id.uploadattachmentbutton);
+    		ButtonNewpost = (Button) findViewById(R.id.newpostbutton);
+    		OnClickListener listener = new OnClickListener(){
+    
+    			@Override
+    			public void onClick(View v) {
+    				// TODO Auto-generated method stub
+    				switch(v.getId()){
+    				
+    				// to upload an attachment
+    				case R.id.uploadattachmentbutton:
+        				Intent intent = new Intent();
+        				intent.setAction(Intent.ACTION_GET_CONTENT);
+        				intent.setType("image/*");
+        				Log.v(TAG, "startActivityForResult");
+        				startActivityForResult(intent, 1);
+        				break;
+        				
+        			// to post a new topic
+    				case R.id.newpostbutton:
+    					if(NewTopicTitle.getText().toString().trim().equals("")){
+    		            	builder.setMessage(getResources().getString(R.string.titlenotnull));
+    		            	builder.show();						
+    					}else{
+        					asynctask = new NewpostAsyncTask();
+        					asynctask.execute();			
+        					break;
+        				}
+    				}
+    			}
+    			
+    		};
+    
+    		ButtonUpload.setOnClickListener(listener);
+    		ButtonNewpost.setOnClickListener(listener);
+    		getnewpostasynctask = new GetNewPostPageAsyncTask();
+    		getnewpostasynctask.execute();
+    	}
+
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -160,7 +184,9 @@ public class NewTopicActivity extends Activity {
 			int resultCode, Intent data) {
 		// TODO Auto-generated method stub
 		Log.v("####image", String.valueOf(requestCode)+String.valueOf(resultCode));
-        if (resultCode == RESULT_OK) {  
+		if(requestCode == 1 && null != data && data.getBooleanExtra("result", false) ){
+			generateNewTopicView();
+		}else if (resultCode == RESULT_OK) {  
             Uri uri = data.getData();  
             Log.v("uri", uri.toString());  
 
@@ -195,14 +221,13 @@ public class NewTopicActivity extends Activity {
 	}
 	
 	protected class GetNewPostPageAsyncTask extends AsyncTask<Object, Object, Object>{
-    	private HashMap<String, String> cookie;
-    	private FudanBBSApplication currentapplication;
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			progressdialog.setMessage(getString(R.string.generatenewpostpage));
 			progressdialog.show();		
-			currentapplication = (FudanBBSApplication)getApplication();
+
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();	
 			attachmentenability = "0";
@@ -272,8 +297,7 @@ public class NewTopicActivity extends Activity {
 	
  	protected class NewpostAsyncTask extends AsyncTask<Object, Object, Object>{
     	private HashMap<String, String> cookie;
-    	private StringBuffer cookiestring;
-    	private FudanBBSApplication currentapplication;		
+    	private StringBuffer cookiestring;	
     	private HttpURLConnection con;
     	private String topictitle, topictext, topiccontent;
     	private int responsecode;
@@ -368,7 +392,6 @@ public class NewTopicActivity extends Activity {
 		private String attachmenturl;
     	private HashMap<String, String> cookie;
     	private StringBuffer cookiestring;
-    	private FudanBBSApplication currentapplication;		
     	private HttpURLConnection con;
 		@Override
 		protected void onPreExecute() {
