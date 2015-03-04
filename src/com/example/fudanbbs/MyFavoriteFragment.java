@@ -4,6 +4,7 @@
 package com.example.fudanbbs;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -102,7 +103,8 @@ public class MyFavoriteFragment extends Fragment {
 	
 	
 	public class boardlistAsyncTask extends AsyncTask{
-		@Override
+    	private int responsecode;
+		@Override		
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
@@ -176,8 +178,9 @@ public class MyFavoriteFragment extends Fragment {
 					map.put("boarddesc", string[1]);
 					boardlist.add(map);
 					}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch(SocketTimeoutException e){
+				responsecode = 9999;
+			}catch(Exception e){
 				e.printStackTrace();
 			}
 

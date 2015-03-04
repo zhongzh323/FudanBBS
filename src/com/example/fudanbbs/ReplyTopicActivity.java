@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -370,13 +371,22 @@ public class ReplyTopicActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			if(200 == responsecode && responsemessage.equals("OK")){
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.newpostsuccess), Toast.LENGTH_SHORT).show();
-				finish();
-			}
 			if(progressdialog.isShowing()){
 				progressdialog.dismiss();
 			}
+			switch(responsecode){
+			case 200:
+				if(responsemessage.equals("OK")){
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.newpostsuccess), Toast.LENGTH_SHORT).show();
+					finish();
+				}
+				break;
+			case 9999:
+				Toast.makeText(getApplicationContext(),  getResources().getString(R.string.connectfailed), Toast.LENGTH_LONG).show();
+				break;
+			}
+
+
 			Log.v(TAG, "onPostExecute");
 		}
 
@@ -401,7 +411,6 @@ public class ReplyTopicActivity extends Activity {
 				DataOutputStream ds = new DataOutputStream(con.getOutputStream());
 				StringBuffer content = new StringBuffer("title="+topictitle+"&sig=1&text="+topictext);
 
-
 				Log.v(TAG, content.toString());
 				ds.write(content.toString().getBytes("utf-8"));
 
@@ -411,9 +420,11 @@ public class ReplyTopicActivity extends Activity {
     	        responsemessage = con.getResponseMessage();
     	        con.disconnect();
 
-			} catch (MalformedURLException e) {
+			}catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}catch(SocketTimeoutException e){
+				responsecode = 9999;
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -494,7 +505,7 @@ public class ReplyTopicActivity extends Activity {
 		        String boundary ="---------------------------253522105810294";
     	        con=(HttpURLConnection)url.openConnection();
 
-    	         con.setConnectTimeout(20000);
+    	         con.setConnectTimeout(15000);
     	          con.setDoInput(true);
     	          con.setDoOutput(true);
     	          con.setUseCaches(false);
