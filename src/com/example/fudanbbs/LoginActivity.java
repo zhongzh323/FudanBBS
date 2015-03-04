@@ -193,7 +193,7 @@ public class LoginActivity extends Activity {
 					currentApplication.setCurrentUserGuest(false);
 					currentApplication.setCurrentUsername(username);
 					currentApplication.saveAccountInfo(accountInfo);
-					Toast.makeText(getApplicationContext(), getString(R.string.loginSucceed), Toast.LENGTH_LONG).show();
+					Toast.makeText(getApplicationContext(), username + " "+getString(R.string.loginSucceed), Toast.LENGTH_LONG).show();
 					Intent intent = new Intent();
 					intent.putExtra("result", true);
 					LoginActivity.this.setResult(0, intent);

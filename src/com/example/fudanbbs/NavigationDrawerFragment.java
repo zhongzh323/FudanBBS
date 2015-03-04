@@ -14,6 +14,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -122,19 +123,20 @@ public class NavigationDrawerFragment extends Fragment {
         return mDrawerListView;
     }
 
-    @Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		new Handler().postDelayed(new Runnable(){
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				adapter.notifyDataSetChanged();
-			}
-			
-		}, 0);
-	}
+//    @Override
+//	public void onResume() {
+//		// TODO Auto-generated method stub
+//		super.onResume();
+//		Log.v("navigation drawer", "on resumed");
+//		new Handler().postDelayed(new Runnable(){
+//			@Override
+//			public void run() {
+//				// TODO Auto-generated method stub
+//				adapter.notifyDataSetChanged();
+//			}
+//			
+//		}, 0);
+//	}
     
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
@@ -181,6 +183,15 @@ public class NavigationDrawerFragment extends Fragment {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+        		Log.v("navigation drawer", "on drawer opened");
+        		new Handler().postDelayed(new Runnable(){
+        			@Override
+        			public void run() {
+        				// TODO Auto-generated method stub
+        				adapter.notifyDataSetChanged();
+        			}
+        			
+        		}, 0);
                 if (!isAdded()) {
                     return;
                 }
@@ -329,8 +340,10 @@ public class NavigationDrawerFragment extends Fragment {
 //			textview.setTextSize(20);
 			if(currentApplication.isCurrentUserGuest()){
 				textview.setText(R.string.notloginyet);
+				Log.v("iscurrentuserguest", "yes");
 			}else{
 				textview.setText(currentApplication.getCurrentUsername());
+				Log.v("iscurrentuserguest", "no");
 			}		
 			
 	        LinearLayout layout1 = (LinearLayout) convertView.findViewById(R.id.layout1);
