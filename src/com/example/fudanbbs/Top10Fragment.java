@@ -1,5 +1,6 @@
 package com.example.fudanbbs;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +26,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
+import android.widget.Toast;
 /**
  * @author Joseph.Zhong
  *
@@ -64,7 +66,7 @@ public class Top10Fragment extends Fragment {
 	}
 	
     public class top10AsycTask extends AsyncTask<String, Integer, String>{
-
+    	private int responsecode;
 
 		@Override
 		protected void onPreExecute() {
@@ -85,6 +87,9 @@ public class Top10Fragment extends Fragment {
 			// TODO Auto-generated method stub
 //			super.onPostExecute(result);
 			Log.v(TAG, "onPostExecute");
+			if(9999 == responsecode){
+				Toast.makeText(getActivity(),getResources().getString(R.string.connectfailed), Toast.LENGTH_LONG).show();
+			}
 	        adapter = new SimpleAdapter(getActivity().getApplicationContext(), top10List, 
 	        		R.layout.top10, 
 	        		new String[]{"owner","board","title"}, 
@@ -130,7 +135,7 @@ public class Top10Fragment extends Fragment {
 			// TODO Auto-generated method stub
 			Log.v(TAG, "doInBackground start");
 			try {
-				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/top10").get();
+				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/top10").timeout(15000).get();
 				Elements ele = doc.getElementsByTag("top");
 				for(Element e: ele){
 					HashMap<String, String> map = new HashMap();
@@ -141,7 +146,9 @@ public class Top10Fragment extends Fragment {
 					map.put("count", e.attr("count").toString().trim());
 					top10List.add(map);
 				}
-			} catch (Exception e) {
+			}catch(SocketTimeoutException e){
+				responsecode = 9999;
+			}catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
