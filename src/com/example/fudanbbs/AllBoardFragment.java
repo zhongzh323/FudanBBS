@@ -5,6 +5,8 @@ package com.example.fudanbbs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,20 @@ public class AllBoardFragment extends Fragment {
 	}
 	public class AllBoardsAsyncTask extends AsyncTask{
 		
+		private class SortByLetter implements Comparator{
+
+			@Override
+			public int compare(Object lhs, Object rhs) {
+				// TODO Auto-generated method stub
+				HashMap <String, String> mapl = (HashMap<String, String>) lhs; 
+				HashMap <String, String> mapr = (HashMap<String, String>) rhs; 
+				String left = mapl.get("boardtitle");
+				String right = mapr.get("boardtitle");
+				return left.compareTo(right);
+			}
+			
+		}
+		
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
@@ -87,6 +103,10 @@ public class AllBoardFragment extends Fragment {
 		protected void onPostExecute(Object result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			
+			if(null != allboardlist){
+				Collections.sort(allboardlist, new SortByLetter());
+			}
 	    	allboardadapter = new SimpleAdapter(rootview.getContext(), allboardlist, 
 	    			R.layout.allboard, new String[]{"boardtitle", "boarddesc"}, new int[]{R.id.boardtitle, R.id.boarddesc});
 	    	allboardslistview.setAdapter(allboardadapter);
@@ -124,7 +144,7 @@ public class AllBoardFragment extends Fragment {
 			// TODO Auto-generated method stub
 			String url = "http://bbs.fudan.edu.cn/bbs/all";
 			try {
-				Document doc = Jsoup.connect(url).get();
+				Document doc = Jsoup.connect(url).timeout(10000).get();
 				Elements boards = doc.getElementsByTag("brd ");
 				for(Element board: boards){
 
