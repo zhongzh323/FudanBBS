@@ -156,6 +156,7 @@ public class LoginActivity extends Activity {
 	public class loginTask extends AsyncTask<Object, Object, Object>{
 	//	private TaskItem aTaskItem;
 		private int httpResponseCode;
+		private HashMap<String, String> cookie;
 	    private ProgressDialog progressdialog;
 		@Override
 		protected void onPreExecute() {
@@ -182,23 +183,28 @@ public class LoginActivity extends Activity {
 			}
 			switch(httpResponseCode){
     			case 200:
-					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
-
-					if (CBrememberPassword.isChecked()){
-						accountInfo.put("rememberpassword", "true");    						
-					}
-					if(CBautoLogin.isChecked()){
-						accountInfo.put("autologin", "true");
-					}
-					currentApplication.setCurrentUserGuest(false);
-					currentApplication.setCurrentUsername(username);
-					currentApplication.saveAccountInfo(accountInfo);
-					Toast.makeText(getApplicationContext(), username + " "+getString(R.string.loginSucceed), Toast.LENGTH_LONG).show();
-					Intent intent = new Intent();
-					intent.putExtra("result", true);
-					LoginActivity.this.setResult(0, intent);
-					finish();					
-    				break;
+    				if(null == cookie.get("utmpuser")){
+    					loginingDialog.setMessage(getResources().getString(R.string.loginFailed));    	
+        				loginingDialog.show();
+    				}else{
+    					loginingDialog.setMessage(getResources().getString(R.string.loginSucceed));
+ //       				loginingDialog.show();
+    					if (CBrememberPassword.isChecked()){
+    						accountInfo.put("rememberpassword", "true");    						
+    					}
+    					if(CBautoLogin.isChecked()){
+    						accountInfo.put("autologin", "true");
+    					}
+    					currentApplication.setCurrentUserGuest(false);
+    					currentApplication.setCurrentUsername(username);
+    					currentApplication.saveAccountInfo(accountInfo);
+    					Toast.makeText(getApplicationContext(), username + " "+getString(R.string.loginSucceed), Toast.LENGTH_LONG).show();
+    					Intent intent = new Intent();
+    					intent.putExtra("result", true);
+    					LoginActivity.this.setResult(0, intent);
+    					finish();		
+    					}
+        				break;
     			case 9999:		
     				loginingDialog.setMessage(getResources().getString(R.string.connectfailed));
     				loginingDialog.show();
@@ -228,23 +234,30 @@ public class LoginActivity extends Activity {
 				connection.setDoOutput(true);
 				connection.setRequestMethod("GET");
 				connection.setConnectTimeout(20000);
-				connection.setInstanceFollowRedirects(false);
+				connection.setInstanceFollowRedirects(true);
 				connection.connect();
 				
 				httpResponseCode = connection.getResponseCode();
+				Log.v("getloginpage", String.valueOf(httpResponseCode));
+				
 				if(null != connection){
 					connection.disconnect();
 				}
 				if( 200 == httpResponseCode){
+					Log.v("httpresponse", "200");
 					String loginurl = "http://bbs.fudan.edu.cn/bbs/login";
-					Response res = Jsoup.connect(loginurl).data("id",username,"pw",password)
+					Response res = Jsoup.connect(loginurl).data("id",username,"pw",password, "persistent", "on").userAgent("Mozilla/5.0")
 							.timeout(10000).method(Method.POST).execute();	
-					HashMap<String, String> cookie = new HashMap<String, String>();
-					cookie.put("utmpuserid", res.cookie("utmpuserid"));
+					Log.v("#####post result", res.statusMessage().toString()+res.statusCode()+res.body()+res.cookies().keySet().toString());
+					cookie = new HashMap<String, String>();
+					cookie.put("utmpuser", res.cookie("utmpuser"));
 					cookie.put("utmpkey", res.cookie("utmpkey"));
-					cookie.put("utmpnum", res.cookie("utmpnum"));
+//					cookie.put("utmpnum", res.cookie("utmpnum"));
 					currentApplication.setCookie(cookie);    
-					Log.v("loginActivitycookie", cookie.get("utmpuserid"));
+    				if(null != cookie.get("utmpuser")){
+    					Log.v("loginActivitycookie", cookie.get("utmpuser"));
+    				}
+			
 				}
 
 	

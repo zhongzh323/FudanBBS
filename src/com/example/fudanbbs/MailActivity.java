@@ -161,7 +161,7 @@ public class MailActivity extends Activity {
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+			Log.v(TAG+" cookie", cookie.get("utmpuser"));
 			try {
 				Document doc = Jsoup.connect(url).timeout(15000).cookies(cookie).get();
 				Elements elements = doc.getElementsByTag("mail");
@@ -221,7 +221,7 @@ public class MailActivity extends Activity {
 					// TODO Auto-generated method stub
 						String replytext =ETeditmail.getText().toString(); 
 						if(replytext.equals("\n\n"+mailreplycontent)){
-							Toast.makeText(getApplicationContext(), "»Ø¸´ÄÚÈÝ²»ÄÜÎª¿Õ", Toast.LENGTH_LONG).show();
+							Toast.makeText(getApplicationContext(), "ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Îªï¿½ï¿½", Toast.LENGTH_LONG).show();
 						}else{
 							postreplycontentasynctask = new postReplyContentAsyncTask();
 							postreplycontentasynctask.execute(new String[]{mailtitle, mailfrom, replytext});
@@ -241,7 +241,7 @@ public class MailActivity extends Activity {
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+			Log.v(TAG+" cookie", cookie.get("utmpuser"));
 			try {
 				Document doc = Jsoup.connect(replyurl).timeout(15000).cookies(cookie).get();
 				Elements elements = doc.getElementsByTag("m");
@@ -314,7 +314,7 @@ public class MailActivity extends Activity {
 			}
 			cookiestring.deleteCharAt(cookiestring.length()-1);
 			Log.v(TAG, "doInBackground");
-			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+			Log.v(TAG+" cookie", cookie.get("utmpuser"));
 			try {
 				URL url = new URL("http://bbs.fudan.edu.cn/bbs/sndmail");
 				con = (HttpURLConnection) url.openConnection();

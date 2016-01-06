@@ -486,11 +486,11 @@ public class PostActivity extends Activity {
 
 
 			Log.v(TAG, "doInBackground");
-//			Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+//			Log.v(TAG+" cookie", cookie.get("utmpuser"));
 			try {
 				Log.v(TAG, "doInBackground start "+url);
 				Document doc;
-				if(cookie.get("utmpuserid")!=null){
+				if(cookie.get("utmpuser")!=null){
 					doc = Jsoup.connect(url).timeout(15000).cookies(cookie).get();
 				}else{
 					doc = Jsoup.connect(url).timeout(15000).get();			

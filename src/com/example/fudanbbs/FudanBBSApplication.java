@@ -146,11 +146,11 @@ public class FudanBBSApplication extends Application {
 				res = Jsoup.connect(loginurl).data("id",account.get("username"),"pw",account.get("password"))
 						.timeout(15000).method(Method.POST).execute();
 //				HashMap<String, String> cookie = new HashMap<String, String>();
-				if(null != res.cookie("utmpuserid")){
-    				cookie.put("utmpuserid", res.cookie("utmpuserid"));
-    				Log.v(TAG, res.cookie("utmpuserid"));
+				if(null != res.cookie("utmpuser")){
+    				cookie.put("utmpuser", res.cookie("utmpuser"));
+    				Log.v(TAG, res.cookie("utmpuser"));
     				cookie.put("utmpkey", res.cookie("utmpkey"));
-    				cookie.put("utmpnum", res.cookie("utmpnum"));
+ //   				cookie.put("utmpnum", res.cookie("utmpnum"));
 				}else{
 					Log.v(TAG, "res is null");				
 				}
@@ -182,7 +182,7 @@ public class FudanBBSApplication extends Application {
 	// get global cookie
 	public HashMap<String, String> get_cookie(){
 
-		while(null == this.cookie.get("utmpuserid")){
+		while(null == this.cookie.get("utmpuser")){
 			Log.v(TAG, "cookie null");
 			if(true == flag){
 				reLogin();				
@@ -195,7 +195,7 @@ public class FudanBBSApplication extends Application {
 				e.printStackTrace();
 			}
 		}
-		Log.v(TAG, this.cookie.get("utmpuserid"));
+		Log.v(TAG, this.cookie.get("utmpuser"));
 		return this.cookie;
 	}
 	// set global cookie

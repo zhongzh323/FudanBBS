@@ -284,11 +284,11 @@ public class MainActivity extends Activity
 					Response res = Jsoup.connect(loginurl).data("id",username,"pw",password)
 							.timeout(10000).method(Method.POST).execute();	
 					HashMap<String, String> cookie = new HashMap<String, String>();
-					cookie.put("utmpuserid", res.cookie("utmpuserid"));
+					cookie.put("utmpuser", res.cookie("utmpuser"));
 					cookie.put("utmpkey", res.cookie("utmpkey"));
 					cookie.put("utmpnum", res.cookie("utmpnum"));
 					currentApplication.setCookie(cookie);    
-					Log.v("loginActivitycookie", cookie.get("utmpuserid"));
+					Log.v("loginActivitycookie", cookie.get("utmpuser"));
 				}
 
 	

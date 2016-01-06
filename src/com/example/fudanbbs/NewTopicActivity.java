@@ -258,7 +258,7 @@ public class NewTopicActivity extends Activity {
 			Log.v(TAG, url);
 			Document doc;
 			try {
-				if(cookie.get("utmpuserid")!=null){
+				if(cookie.get("utmpuser")!=null){
 					doc = Jsoup.connect(url).cookies(cookie).get();
 				}else{
 					doc = Jsoup.connect(url).get();					
@@ -272,7 +272,7 @@ public class NewTopicActivity extends Activity {
 				}
 				if(attachmentenability.equals("1")){
 					url = "http://bbs.fudan.edu.cn/bbs/preupload?board="+board;
-					if(cookie.get("utmpuserid")!=null){
+					if(cookie.get("utmpuser")!=null){
 						doc = Jsoup.connect(url).cookies(cookie).get();
 					}else{
 						doc = Jsoup.connect(url).get();					

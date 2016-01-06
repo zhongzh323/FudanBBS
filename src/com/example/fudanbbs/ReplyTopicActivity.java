@@ -275,7 +275,7 @@ public class ReplyTopicActivity extends Activity {
 			Log.v(TAG, url);
 			Document doc;
 			try {
-				if(cookie.get("utmpuserid")!=null){
+				if(cookie.get("utmpuser")!=null){
 					doc = Jsoup.connect(url).cookies(cookie).get();
 				}else{
 					doc = Jsoup.connect(url).get();					

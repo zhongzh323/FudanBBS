@@ -131,11 +131,11 @@ public class getPreferenceAsyncTask extends AsyncTask{
 		super.onPostExecute(result);
 		Log.v(TAG, "onPostExecute");
 		TVnickname.setText(map.get("nick"));
-		TVbirthday.setText("19"+map.get("year")+"年"+map.get("month")+"月"+map.get("day")+"日");
-		TVgender.setText(map.get("gender").equals("M")?"男":"女");
+		TVbirthday.setText("19"+map.get("year")+", "+map.get("month")+", "+map.get("day")+", ");
+		TVgender.setText(map.get("gender").equals("M")?"Male":"Female");
 		TVlogincount.setText(map.get("login"));
 		String stay = map.get("stay");
-		String onlinetime = String.valueOf(((Integer.valueOf(stay))/60))+"小时"+String.valueOf(((Integer.valueOf(stay))%60))+"分钟";
+		String onlinetime = String.valueOf(((Integer.valueOf(stay))/60))+"hours "+String.valueOf(((Integer.valueOf(stay))%60))+"minutes";
 		TVonlinetime.setText(onlinetime);
 		TVpostcount.setText(map.get("post"));
 		TVaccountsince.setText(map.get("since").substring(0,10)+"  "+map.get("since").substring(11,19));
@@ -153,7 +153,7 @@ public class getPreferenceAsyncTask extends AsyncTask{
 		cookie = new  HashMap<String, String>();
 		cookie = currentapplication.get_cookie();
 		Log.v(TAG, "doInBackground");
-		Log.v(TAG+" cookie", cookie.get("utmpuserid"));
+		Log.v(TAG+" cookie", cookie.get("utmpuser"));
 		try {
 			Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/info").timeout(15000).cookies(cookie).get();
 			Elements elements = doc.getElementsByTag("bbsinfo");

@@ -164,7 +164,7 @@ public class MyFavoriteFragment extends Fragment {
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-//			Log.v(TAG, cookie.get("utmpuserid").isEmpty()?"cookie is empty":cookie.get("utmpuserid"));
+//			Log.v(TAG, cookie.get("utmpuser").isEmpty()?"cookie is empty":cookie.get("utmpuser"));
 			try {
 				Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/fav").timeout(15000).cookies(cookie).get();
 				Elements boards = doc.getElementsByTag("brd");

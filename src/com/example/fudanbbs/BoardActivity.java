@@ -293,7 +293,7 @@ public class BoardActivity extends Activity {
 					Document doc;
 					if(true == topicmodeURL.isEmpty()){
 	    				try {    
-	    					if(cookie.get("utmpuserid")!=null){
+	    					if(cookie.get("utmpuser")!=null){
 	    						doc = Jsoup.connect(url).cookies(cookie).get();
 	    					}else{
 	    						doc = Jsoup.connect(url).get();					
@@ -315,7 +315,7 @@ public class BoardActivity extends Activity {
 			}
 			Document doc1;
 			try{
-				if(cookie.get("utmpuserid")!=null){
+				if(cookie.get("utmpuser")!=null){
 					doc1 = Jsoup.connect(url).cookies(cookie).get();
 				}else{
 					doc1 = Jsoup.connect(url).get();					

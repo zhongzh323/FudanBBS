@@ -224,7 +224,7 @@ public class RecommendBoardFragment extends Fragment {
 				}else{
 					cookie = new  HashMap<String, String>();
 					cookie = currentapplication.get_cookie();
-					Log.v("RecommendBoardFragementcoolie", cookie.get("utmpuserid"));
+					Log.v("RecommendBoardFragementcoolie", cookie.get("utmpuser"));
 					doc = Jsoup.connect(url).cookies(cookie).get();					
 				}
 

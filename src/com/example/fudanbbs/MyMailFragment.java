@@ -329,8 +329,8 @@ public class MyMailFragment extends Fragment {
 			cookie = new  HashMap<String, String>();
 			cookie = currentapplication.get_cookie();
 			Log.v(TAG, "doInBackground");
-//			Log.v(TAG, cookie.get("utmpuserid").isEmpty()?"cookie is empty":cookie.get("utmpuserid"));
-//			Log.v(TAG+" cookie", cookie.isEmpty()?"cookie is empty":"utmpuserid");
+//			Log.v(TAG, cookie.get("utmpuser").isEmpty()?"cookie is empty":cookie.get("utmpuser"));
+//			Log.v(TAG+" cookie", cookie.isEmpty()?"cookie is empty":"utmpuser");
 			try{
     			Document doc = Jsoup.connect("http://bbs.fudan.edu.cn/bbs/mail").timeout(15000).cookies(cookie).get();   
     			HashMap<String, String> map;  	
